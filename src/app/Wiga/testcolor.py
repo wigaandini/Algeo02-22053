@@ -1,16 +1,23 @@
 from  colorbased import *
+import matplotlib.pyplot as plt
+from util import *
 
-namaFile = input("Masukkan nama file (lengkap dengan type file, e.g : Opan.png): \n")
+# namaFile = input("Masukkan nama file (lengkap dengan type file, e.g : Opan.png): \n")
 
-img = cv2.imread(getImgPath(namaFile))
+# img = cv2.imread(getImgPath(namaFile))
+# # cv2.imshow('image', img) 
+# # cv2.waitKey(0) 
+# # cv2.destroyAllWindows() 
+# # plt.imshow(img)
+# # plt.show()
+# # print(img)
+
+# img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) 
 # cv2.imshow('image', img) 
 # cv2.waitKey(0) 
 # cv2.destroyAllWindows() 
-
-img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) 
-# cv2.imshow('image', img_rgb) 
-# cv2.waitKey(0) 
-# cv2.destroyAllWindows() 
+# plt.imshow(img)
+# plt.show()
 # print(img_rgb)
 # print("\n")
 
@@ -21,60 +28,6 @@ img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 # print(len(img_rgb),"\n")
 # cap = cv2.resize(img_rgb, (256,256))
 # # print(cap)
-
-if(len(img_rgb[0] % 3 != 0)):
-    nCol = ((len(img_rgb[0]))//3) * 3
-if(len(img_rgb) % 3 != 0):
-    nRow = ((len(img_rgb))//3) * 3
-
-check = 0
-startRow = 0
-endRow = (nRow//3) - 1
-startCol = 0
-endCol = (nCol//3) - 1 
-
-print(len(img_rgb))
-print(len(img_rgb[0]))
-print(nRow)
-print(nCol)
-
-# getHSVBlock(img_rgb, 98, 195, 0, 157)
-
-# res = getHSVBlock(img_rgb, startRow, endRow, startCol, endCol)
-# print(res)
-
-hsv = ["" for check in range(9)]
-
-while(check < 9):
-    while(endRow < nRow):
-        while(endCol < nCol):
-            hsv[check] = getHSVBlock(img_rgb, startRow, endRow, startCol, endCol)
-            # print(startRow, endRow)
-            # print(startCol, endCol)
-            # print(check)
-            # print(hsv)
-            check += 1
-            startCol += (nCol//3)
-            endCol = startCol + (nCol//3) - 1 
-        startRow += (nRow//3)
-        endRow = startRow + (nRow//3) - 1 
-        startCol= 0
-        endCol = (nCol//3) - 1
-    #     print(startRow, endRow)
-    #     print(startCol, endCol)
-    #     print(check)
-    #     print(hsv)
-    # print(startRow, endRow)
-    # print(startCol, endCol)
-    # print(check)
-    # print(hsv)
-
-# print(hsv)
-
-blockNumber = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-tupleHSV = list(zip(blockNumber, hsv))
-print(tupleHSV)
-
 
 # for col in range(0, (nCol/3) + 1, 1):
 #     for row in range(nRow):
@@ -149,3 +102,96 @@ print(tupleHSV)
 # cv2.imshow('Red Detection Result', res)
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
+from PIL import Image, ImageTk
+import tkinter as tk
+file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
+file2 = input("Masukkan nama file 2 (lengkap dengan type file, e.g : Opan.png): \n")
+# img1 = cv2.imread(getImgPath(file1))
+# plt.imshow(img1)
+# plt.show()
+# # img1rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB) 
+# img2 = cv2.imread(getImgPath(file2))
+# plt.imshow(img2)
+# plt.show()
+
+img1 = Image.open(getImgPath(file1))
+img2 = Image.open(getImgPath(file2))
+im_matrix1 = np.array(img1)
+im_matrix2 = np.array(img2)
+# print(im_matrix1)
+print(len(im_matrix1))
+print(len(im_matrix1[0]))
+# root = tk.Tk()
+# # img = Image.open("image.gif")
+# tkimage = ImageTk.PhotoImage(im)
+# tk.Label(root, image=tkimage).pack()
+# root.mainloop()
+# h1 = getHBlock(im_matrix1, 0, 624, 0, 538)
+# print(h1)
+
+# img2rgb = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB) 
+hsv1 = getVector(im_matrix1)
+print(hsv1)
+hsv2 = getVector(im_matrix2)
+print(hsv2)
+# print(cosineSimilarity(hsv1[0], hsv2[0]))
+# print(cosineSimilarity(hsv1[1], hsv2[1]))
+# print(cosineSimilarity(hsv1[2], hsv2[2]))
+# print(cosineSimilarity(hsv1[3], hsv2[3]))
+# print(cosineSimilarity(hsv1[4], hsv2[4]))
+# print(cosineSimilarity(hsv1[5], hsv2[5]))
+# print(cosineSimilarity(hsv1[6], hsv2[6]))
+# print(cosineSimilarity(hsv1[7], hsv2[7]))
+# print(cosineSimilarity(hsv1[8], hsv2[8]))
+# # print(compare)
+print(avgCS(hsv1,hsv2))
+# print(euclideanDistance(hsv1, hsv2))
+
+# import numpy as np
+
+# # Assuming you have two image arrays img1 and img2
+# # Calculate the Euclidean distance
+# # distance = euclideanDistance(hsv1, hsv2)
+# distance = np.linalg.norm(img2 - img1)
+# print(distance)
+
+# # Define a threshold to determine the similarity percentage
+# threshold = 100  # Adjust this value based on your needs
+
+# # Calculate the similarity percentage
+# similarity_percentage = 100 - (distance / threshold) * 100
+# if similarity_percentage < 0:
+#     similarity_percentage = 0
+
+# print(f"The similarity percentage between the images is: {similarity_percentage}%")
+
+
+# import cv2
+# import numpy as np
+
+# # Load the images
+# # img1 = cv2.imread('path_to_image_1.jpg')
+# # img2 = cv2.imread('path_to_image_2.jpg')
+
+# # Resize the images to have the same dimensions for comparison
+# img1 = cv2.resize(img1, (300, 300))
+# img2 = cv2.resize(img2, (300, 300))
+
+# # Convert images to the LAB color space
+# img1_lab = cv2.cvtColor(img1, cv2.COLOR_BGR2LAB)
+# img2_lab = cv2.cvtColor(img2, cv2.COLOR_BGR2LAB)
+
+# # Calculate the Mean Squared Error (MSE) between the two images
+# mse = np.mean((img1_lab - img2_lab) ** 2)
+
+# # Define a threshold value based on your requirements
+# threshold = 100  # Adjust this value as needed
+
+# # Check color similarity based on the MSE value
+# if mse < threshold:
+#     print("The images are similar in terms of color.")
+# else:
+#     print("The images are not similar in terms of color.")
+
+# # Display the Mean Squared Error value
+# print(f"The Mean Squared Error (MSE) between the images is: {mse}")

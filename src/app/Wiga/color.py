@@ -107,7 +107,7 @@ endCol = int(nCol/3) - 1
 for col in range(endCol):
     for row in range(endRow):
         color = img_rgb[row,col]
-        print(color)
+        # print(color)
         # red = float(color[0]/255)
         # green = float(color[1]/255)
         # blue = float(color[2]/255)
@@ -116,4 +116,4 @@ for col in range(endCol):
         sVal = getS(color)
         # print("S = ", sVal)
         vVal = getColorMax(color)
-        print(hVal, sVal, vVal)
+        # print(hVal, sVal, vVal)
