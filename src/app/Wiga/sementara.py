@@ -74,7 +74,7 @@ def HSVHistogram(hVal, sVal, vVal):
     # Jadiin 1 value, such as 711, 120 dst
     combined_values = hVal_flat * 100 + sVal_flat * 10 + vVal_flat
 
-    custom_bins = [0, 1, 2, 10, 11, 12, 20, 21, 22, 100, 101, 102, 110, 111, 112, 120, 121, 122, 200, 201, 202, 210, 211, 212, 220, 221, 222, 300, 301, 302, 310, 311, 312, 320, 321, 322, 400, 401, 402, 410, 411, 412, 420, 421, 422, 500, 501, 502, 510, 511, 512, 520, 521, 522, 600, 601, 602, 610, 611, 612, 620, 621, 622, 700, 701, 702, 710, 711, 712, 720, 721, 722]
+    custom_bins = [0, 1, 2, 10, 11, 12, 20, 21, 22, 100, 101, 102, 110, 111, 112, 120, 121, 122, 200, 201, 202, 210, 211, 212, 220, 221, 222, 300, 301, 302, 310, 311, 312, 320, 321, 322, 400, 401, 402, 410, 411, 412, 420, 421, 422, 500, 501, 502, 510, 511, 512, 520, 521, 522, 600, 601, 602, 610, 611, 612, 620, 621, 622, 700, 701, 702, 710, 711, 712, 720, 721, 722, 730]
     plt.hist(combined_values, bins=custom_bins, color='c', alpha=0.7)
 
     hist_values, _ = np.histogram(combined_values, bins=custom_bins)
@@ -122,6 +122,7 @@ def calculate16HSV(imgblocks):
         h, s, v = getHSV(imgblocks[i])
         hsv = HSVHistogram(h, s, v)
         hsv16.append(hsv)
+        print(len(hsv))
     return hsv16
 
 def cosineSimilarity16Block(hsvblock1, hsvblock2):
@@ -129,14 +130,16 @@ def cosineSimilarity16Block(hsvblock1, hsvblock2):
     for i in range(16):
         csblock = cosineSimilarity(hsvblock1[i], hsvblock2[i])
         cs.append(csblock)
+        # print(csblock)
     return cs
 
 file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
 img1 = cv2.imread(getImgPath(file1))
 img1c = cropInto16Blocks(cropImage(img1))
 hsv1 = calculate16HSV(img1c)
+print(len(hsv1))
 
-file2 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
+file2 = input("Masukkan nama file 2 (lengkap dengan type file, e.g : Opan.png): \n")
 img2 = cv2.imread(getImgPath(file2))
 img2c = cropInto16Blocks(cropImage(img2))
 hsv2 = calculate16HSV(img2)
