@@ -1,42 +1,58 @@
+import cv2
 import numpy as np
+from pathlib import Path
+import matplotlib.pyplot as plt
 
-def get_stacked_histograms(data1, data2, data3, bins=30):
-    """
-    Compute stacked histograms for three sets of data.
+def cropInto16Blocks(image):
+    img_height, img_width = image.shape[:2]
+    block_height = img_height // 4
+    block_width = img_width // 4
 
-    Parameters:
-    - data1, data2, data3 (array-like): The data for each histogram.
-    - bins (int, optional): Number of bins in the histogram. Default is 30.
+    blocks = []
+    for r in range(4):
+        for c in range(4):
+            block = image[r * block_height: (r + 1) * block_height, c * block_width: (c + 1) * block_width]
+            blocks.append(block)
 
-    Returns:
-    - hist1, bin_edges1 (tuple): Histogram values and bin edges for data1.
-    - hist2, bin_edges2 (tuple): Histogram values and bin edges for data2.
-    - hist3, bin_edges3 (tuple): Histogram values and bin edges for data3.
-    """
-    hist1, bin_edges1 = np.histogram(data1, bins=bins)
-    hist2, bin_edges2 = np.histogram(data2, bins=bins)
-    hist3, bin_edges3 = np.histogram(data3, bins=bins)
+    return blocks
 
-    return (hist1, bin_edges1), (hist2, bin_edges2), (hist3, bin_edges3)
+def getImgPath(namaFile):
+    path = Path().absolute()
+    pathFile = str(path) + "\\test\\" + namaFile
+    return pathFile
+
+def cropImage(img):
+    height, width, _ = img.shape
+
+    # crop sampe dia habis dibagi 4 karena mau dibikin block 4x4
+    newHeight = height - height % 4
+    newWidth = width - width % 4
+    croppedImg = img[:newHeight, :newWidth]
+
+    return croppedImg
+
 
 # Example usage:
-# Replace data1, data2, and data3 with your own data
-data1 = np.random.randn(1000)
-data2 = np.random.randn(1000) + 3
-data3 = np.random.randn(1000) - 3
+# Replace 'your_image_path.jpg' with the path to your image
+file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
+img1 = cv2.imread(getImgPath(file1))
+img1c = cropImage(img1)
 
-histogram_values = get_stacked_histograms(data1, data2, data3)
+# Convert the image to RGB format (OpenCV reads images in BGR format)
+original_image_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
 
-# Access the histogram values and bin edges for each dataset
-hist1, bin_edges1 = histogram_values[0]
-hist2, bin_edges2 = histogram_values[1]
-hist3, bin_edges3 = histogram_values[2]
+# Crop the image into 4x4 blocks
+blocks = cropInto16Blocks(original_image_rgb)
 
-print(f"Histogram 1 values: {hist1}")
-print(f"Histogram 1 bin edges: {bin_edges1}")
+# Display the original and cropped images
+fig, axes = plt.subplots(4, 4, figsize=(10, 10))
 
-print(f"Histogram 2 values: {hist2}")
-print(f"Histogram 2 bin edges: {bin_edges2}")
+axes[0, 0].imshow(original_image_rgb)
+axes[0, 0].set_title('Original Image')
 
-print(f"Histogram 3 values: {hist3}")
-print(f"Histogram 3 bin edges: {bin_edges3}")
+for r in range(4):
+    for c in range(4):
+        axes[r, c].imshow(blocks[r * 4 + c])
+        axes[r, c].set_title(f'Block {r * 4 + c + 1}')
+
+# plt.show()

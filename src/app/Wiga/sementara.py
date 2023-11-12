@@ -9,7 +9,7 @@ def getImgPath(namaFile):
     return pathFile
 
 def getHSV(img):
-    imgnorm = img / 255.0
+    imgnorm = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) / 255.0
     b, g, r = imgnorm[:, :, 0], imgnorm[:, :, 1], imgnorm[:, :, 2]
     Cmin = np.minimum.reduce([r, g, b])
     Cmax = np.maximum.reduce([r, g, b])
@@ -61,6 +61,8 @@ def getHSV(img):
     return hVal, sVal, vVal
 
 def dotProductVector(vector1, vector2):
+    vector1 = np.array(vector1)
+    vector2 = np.array(vector2)
     value = np.sum(vector1.astype(float) * vector2.astype(float))
     return value
 
@@ -80,6 +82,8 @@ def HSVHistogram(hVal, sVal, vVal):
     return (hist_values)
 
 def vectorLength(vector):
+    if isinstance(vector, list):
+        vector = np.array(vector)
     value = np.sum(vector.astype(float)**2)
     return np.sqrt(value)
 
@@ -99,24 +103,53 @@ def cropImage(img):
 
     return croppedImg
 
+def cropInto16Blocks(image):
+    img_height, img_width = image.shape[:2]
+    block_height = img_height // 4
+    block_width = img_width // 4
+
+    blocks = []
+    for r in range(4):
+        for c in range(4):
+            block = image[r * block_height: (r + 1) * block_height, c * block_width: (c + 1) * block_width]
+            blocks.append(block)
+
+    return blocks
+
+def calculate16HSV(imgblocks):
+    hsv16 = []
+    for i in range(16):
+        h, s, v = getHSV(imgblocks[i])
+        hsv = HSVHistogram(h, s, v)
+        hsv16.append(hsv)
+    return hsv16
+
+def cosineSimilarity16Block(hsvblock1, hsvblock2):
+    cs = []
+    for i in range(16):
+        csblock = cosineSimilarity(hsvblock1[i], hsvblock2[i])
+        cs.append(csblock)
+    return cs
 
 file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
 img1 = cv2.imread(getImgPath(file1))
-img1c = cropImage(img1)
-h1, s1, v1 = getHSV(img1)
-hsv1 = HSVHistogram(h1, s1, v1)
+img1c = cropInto16Blocks(cropImage(img1))
+hsv1 = calculate16HSV(img1c)
 
 file2 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
 img2 = cv2.imread(getImgPath(file2))
-img2c = cropImage(img2)
-h2, s2, v2 = getHSV(img2)
-hsv2 = HSVHistogram(h2, s2, v2)
+img2c = cropInto16Blocks(cropImage(img2))
+hsv2 = calculate16HSV(img2)
+# h1, s1, v1 = getHSV(img1)
+# hsv1 = HSVHistogram(h1, s1, v1)
+# h2, s2, v2 = getHSV(img2)
+# hsv2 = HSVHistogram(h2, s2, v2)
 
-print(hsv1)
-print()         
-print(hsv2)
-print()
-print(cosineSimilarity(hsv1, hsv2))
+# print(hsv1)
+# print()         
+# print(hsv2)
+# print()
+print(cosineSimilarity16Block(hsv1, hsv2))
 
 # print(cosineSimilarity(hsv1[0], hsv2[0]))
 # print(cosineSimilarity(hsv1[1], hsv2[1]))
