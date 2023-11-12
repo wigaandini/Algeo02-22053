@@ -9,7 +9,7 @@ def getImgPath(namaFile):
     return pathFile
 
 def getHSV(img):
-    imgnorm = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) / 255.0
+    imgnorm = img / 255.0
     b, g, r = imgnorm[:, :, 0], imgnorm[:, :, 1], imgnorm[:, :, 2]
     Cmin = np.minimum.reduce([r, g, b])
     Cmax = np.maximum.reduce([r, g, b])
@@ -73,13 +73,14 @@ def HSVHistogram(hVal, sVal, vVal):
 
     # Jadiin 1 value, such as 711, 120 dst
     combined_values = hVal_flat * 100 + sVal_flat * 10 + vVal_flat
-
     custom_bins = [0, 1, 2, 10, 11, 12, 20, 21, 22, 100, 101, 102, 110, 111, 112, 120, 121, 122, 200, 201, 202, 210, 211, 212, 220, 221, 222, 300, 301, 302, 310, 311, 312, 320, 321, 322, 400, 401, 402, 410, 411, 412, 420, 421, 422, 500, 501, 502, 510, 511, 512, 520, 521, 522, 600, 601, 602, 610, 611, 612, 620, 621, 622, 700, 701, 702, 710, 711, 712, 720, 721, 722]
-    plt.hist(combined_values, bins=custom_bins, color='c', alpha=0.7)
+    frequency_dict = {key: 0 for key in custom_bins}
 
-    hist_values, _ = np.histogram(combined_values, bins=custom_bins)
+    for value in combined_values:
+        frequency_dict[value] += 1
 
-    return (hist_values)
+    frequency_vector = [frequency_dict[key] for key in custom_bins]
+    return frequency_vector
 
 def vectorLength(vector):
     if isinstance(vector, list):
@@ -133,24 +134,26 @@ def cosineSimilarity16Block(hsvblock1, hsvblock2):
 
 file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
 img1 = cv2.imread(getImgPath(file1))
-img1c = cropInto16Blocks(cropImage(img1))
-hsv1 = calculate16HSV(img1c)
-print(len(hsv1))
+# img1c = cropInto16Blocks(cropImage(img1))
+# hsv1 = calculate16HSV(img1c)
+# print(len(hsv1))
 
 file2 = input("Masukkan nama file 2 (lengkap dengan type file, e.g : Opan.png): \n")
 img2 = cv2.imread(getImgPath(file2))
-img2c = cropInto16Blocks(cropImage(img2))
-hsv2 = calculate16HSV(img2)
-# h1, s1, v1 = getHSV(img1)
-# hsv1 = HSVHistogram(h1, s1, v1)
-# h2, s2, v2 = getHSV(img2)
-# hsv2 = HSVHistogram(h2, s2, v2)
+# img2c = cropInto16Blocks(cropImage(img2))
+# hsv2 = calculate16HSV(img2)
+h1, s1, v1 = getHSV(img1)
+hsv1 = HSVHistogram(h1, s1, v1)
+h2, s2, v2 = getHSV(img2)
+hsv2 = HSVHistogram(h2, s2, v2)
 
-# print(hsv1)
-# print()         
-# print(hsv2)
-# print()
-print(cosineSimilarity16Block(hsv1, hsv2))
+print(len(hsv1))
+print(hsv1)
+print()  
+print(len(hsv2))       
+print(hsv2)
+print()
+print(cosineSimilarity(hsv1, hsv2))
 
 # print(cosineSimilarity(hsv1[0], hsv2[0]))
 # print(cosineSimilarity(hsv1[1], hsv2[1]))
