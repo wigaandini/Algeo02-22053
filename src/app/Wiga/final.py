@@ -7,7 +7,7 @@ import os
 
 def getImgPath(namaFile):
     path = Path().absolute()
-    pathFile = str(path) + "\\test\\" + "\\Images\\" + namaFile
+    pathFile = str(path) + "\\test\\" + "\\Image\\" + namaFile
     return pathFile
 
 def getHSV(img):
@@ -92,47 +92,9 @@ def vectorLength(vector):
 
 def cosineSimilarity(vector_img1, vector_img2):
     if(vectorLength(vector_img1) != 0 and vectorLength(vector_img2) != 0):
-        return (dotProductVector(vector_img1, vector_img2)/(vectorLength(vector_img1)*vectorLength(vector_img2)))
+        return (dotProductVector(vector_img1, vector_img2)/(vectorLength(vector_img1)*vectorLength(vector_img2))) * 100
     else :
         return 0
-    
-def cropImage(img):
-    height, width, _ = img.shape
-
-    # crop sampe dia habis dibagi 4 karena mau dibikin block 4x4
-    newHeight = height - height % 4
-    newWidth = width - width % 4
-    croppedImg = img[:newHeight, :newWidth]
-
-    return croppedImg
-
-def cropInto16Blocks(image):
-    img_height, img_width = image.shape[:2]
-    block_height = img_height // 4
-    block_width = img_width // 4
-
-    blocks = []
-    for r in range(4):
-        for c in range(4):
-            block = image[r * block_height: (r + 1) * block_height, c * block_width: (c + 1) * block_width]
-            blocks.append(block)
-
-    return blocks
-
-def calculate16HSV(imgblocks):
-    hsv16 = []
-    for i in range(16):
-        h, s, v = getHSV(imgblocks[i])
-        hsv = HSVHistogram(h, s, v)
-        hsv16.append(hsv)
-    return hsv16
-
-def cosineSimilarity16Block(hsvblock1, hsvblock2):
-    cs = []
-    for i in range(16):
-        csblock = cosineSimilarity(hsvblock1[i], hsvblock2[i])
-        cs.append(csblock)
-    return cs
 
 def readImg(namaFile):
     return cv2.imread(getImgPath(namaFile))
@@ -143,23 +105,9 @@ def getDatasetPath(namaFolder):
     return pathData
 
 def readDataset(dataPath):
-    """
-    Read images from a dataset and display them using OpenCV.
-
-    Parameters:
-    - dataPath (str): The path to the dataset containing image files.
-
-    Returns:
-    - None
-    """
-    # Check if the dataset path exists
-    if not os.path.exists(dataPath):
-        print(f"Error: The dataset path '{dataPath}' does not exist.")
-        return
-
     # List all files in the dataset path
     image_files = [f for f in os.listdir(dataPath) if f.endswith(('.jpg', '.jpeg', '.png'))]
-
+    imgs = []
     # Loop through each image file
     for image_file in image_files:
         # Construct the full path to the image
@@ -167,50 +115,64 @@ def readDataset(dataPath):
 
         # Read the image using OpenCV
         img = cv2.imread(image_path)
+        imgs.append(img)
 
-        # Check if the image was successfully loaded
-        # if img is not None:
-        #     # Display or process the image as needed
-        #     cv2.imshow('Image', img)
-        #     cv2.waitKey(0)
-        #     cv2.destroyAllWindows()
-        # else:
-        #     print(f"Error: Unable to read image '{image_path}'")
+    return imgs
 
-# folder = input("Nama folder dataset: ")
-# dataset_path = getDatasetPath(folder)
-# readDataset(dataset_path)
+def checkSimilarity(img, imgs):
+    res = []
+    h, s, v = getHSV(img)
+    hsv = HSVHistogram(h,s,v)
+    for i in range(len(imgs)):
+        hi, si, vi = getHSV(imgs[i])
+        hsvi = HSVHistogram(hi,si,vi)
+        cs = cosineSimilarity(hsv , hsvi)
+        resi = (i, cs)
+        # print(cs)
+        if cs > 60:
+            res.append(resi)
+    sorted_res = sorted(res, key=lambda x: x[1], reverse=True)
+    return sorted_res
 
-# file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
+folder = input("Nama folder dataset: ")
+# print(imgs)
+
+file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
 # file2 = input("Masukkan nama file 2 (lengkap dengan type file, e.g : Opan.png): \n")
-# # img1c = cropInto16Blocks(cropImage(img1))
-# # hsv1 = calculate16HSV(img1c)
-# # print(len(hsv1))
+# # # img1c = cropInto16Blocks(cropImage(img1))
+# # # hsv1 = calculate16HSV(img1c)
+# # # print(len(hsv1))
 
-# start = time.time()
+start = time.time()
+dataset_path = getDatasetPath(folder)
+imgs = readDataset(dataset_path)
+print(len(imgs))
+img1 = readImg(file1)
+# res = checkSimilarity(img1, imgs)
+# print(res)
 # img1 = cv2.imread(getImgPath(file1))
 # img2 = cv2.imread(getImgPath(file2))
-# # img2c = cropInto16Blocks(cropImage(img2))
-# # hsv2 = calculate16HSV(img2)
+# # # img2c = cropInto16Blocks(cropImage(img2))
+# # # hsv2 = calculate16HSV(img2)
 # h1, s1, v1 = getHSV(img1)
 # hsv1 = HSVHistogram(h1, s1, v1)
 # h2, s2, v2 = getHSV(img2)
 # hsv2 = HSVHistogram(h2, s2, v2)
 
-# print(len(hsv1))
-# print(hsv1)
-# print()  
-# print(len(hsv2))       
-# print(hsv2)
-# print()
+# # print(len(hsv1))
+# # print(hsv1)
+# # print()  
+# # print(len(hsv2))       
+# # print(hsv2)
+# # print()
 # print(cosineSimilarity(hsv1, hsv2) * 100)
 # # print()
-# end = time.time()
+end = time.time()
  
 # # print the difference between start 
 # # and end time in milli. secs
-# print("The time of execution of above program is :",
-#       (end-start), "s")
+print("The time of execution of above program is :",
+      (end-start), "s")
 
 # print(cosineSimilarity(hsv1[0], hsv2[0]))
 # print(cosineSimilarity(hsv1[1], hsv2[1]))

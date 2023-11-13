@@ -6,7 +6,7 @@ import time
 
 def getImgPath(namaFile):
     path = Path().absolute()
-    pathFile = str(path) + "\\test\\" + namaFile
+    pathFile = str(path) + "\\test\\" + "\\Images\\" + namaFile
     return pathFile
 
 def getHSV(img):
@@ -133,15 +133,15 @@ def cosineSimilarity16Block(hsvblock1, hsvblock2):
         cs.append(csblock)
     return cs
 
-start = time.time()
 
 file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
-img1 = cv2.imread(getImgPath(file1))
 # img1c = cropInto16Blocks(cropImage(img1))
 # hsv1 = calculate16HSV(img1c)
 # print(len(hsv1))
 
 file2 = input("Masukkan nama file 2 (lengkap dengan type file, e.g : Opan.png): \n")
+start = time.time()
+img1 = cv2.imread(getImgPath(file1))
 img2 = cv2.imread(getImgPath(file2))
 # img2c = cropInto16Blocks(cropImage(img2))
 # hsv2 = calculate16HSV(img2)
