@@ -60,11 +60,6 @@ def getHSV(img):
     )
     return hVal, sVal, vVal
 
-def dotProductVector(vector1, vector2):
-    vector1 = np.array(vector1)
-    vector2 = np.array(vector2)
-    value = np.sum(vector1.astype(float) * vector2.astype(float))
-    return value
 
 def HSVHistogram(hVal, sVal, vVal):
     hVal_flat = hVal.flatten()
@@ -83,17 +78,10 @@ def HSVHistogram(hVal, sVal, vVal):
     return frequency_vector
 
 
-def vectorLength(vector):
-    if isinstance(vector, list):
-        vector = np.array(vector)
-    value = np.sum(vector.astype(float)**2)
-    return np.sqrt(value)
+def vectorLength(h,s,v):
+    sum = h**2 + v**2 + s**2
+    return sum**(0.5)
 
-def cosineSimilarity(vector_img1, vector_img2):
-    if(vectorLength(vector_img1) != 0 and vectorLength(vector_img2) != 0):
-        return (dotProductVector(vector_img1, vector_img2)/(vectorLength(vector_img1)*vectorLength(vector_img2)))
-    else :
-        return 0
     
 def cropImage(img):
     height, width, _ = img.shape
@@ -119,69 +107,68 @@ def cropInto16Blocks(image):
     return blocks
 
 def calculate16HSV(imgblocks):
-    hsv16 = []
+    hAvgs, sAvgs, vAvgs = [], [], []
     for i in range(16):
         h, s, v = getHSV(imgblocks[i])
-        hsv = HSVHistogram(h, s, v)
-        hsv16.append(hsv)
-        # print(len(hsv))
-    return hsv16
+        hAvg, sAvg, vAvg = (np.mean(h)), (np.mean(s)), (np.mean(v))
+        hAvgs.append(hAvg)
+        sAvgs.append(sAvg)
+        vAvgs.append(vAvg)
+    return hAvgs, sAvgs, vAvgs
+        # combined_values = hAvg * 100 + sAvg * 10 + vAvg
+        # hsvAvg.append(combined_values)
+        # print(len(vsv))
 
-def cosineSimilarity16Block(hsvblock1, hsvblock2):
+def dotProductVector(h1,s1,v1,h2,s2,v2):
+    return h1*h2 + s1*s2 + v1*v2
+
+def cosineSimilarity(h1,s1,v1,h2,s2,v2):
+    if(vectorLength(h1,s1,v1) != 0 and vectorLength(h2,s2,v2) != 0):
+        return (dotProductVector(h1,s1,v1,h2,s2,v2)/(vectorLength(h1,s1,v1)*vectorLength(h2,s2,v2)))
+    else :
+        return 0
+    
+def cosineSimilarity16Block(h1,s1,v1,h2,s2,v2):
     cs = []
     for i in range(16):
-        csblock = cosineSimilarity(hsvblock1[i], hsvblock2[i])
+        csblock = cosineSimilarity(h1[i],s1[i],v1[i],h2[i],s2[i],v2[i])
         cs.append(csblock)
         # print(csblock)
     return cs
 
 def avgCS(CS16Block):
-    # sum = 0
-    # for i in range(16):
-    #     sum += CS16Block[i]
+    sum = 0
+    for i in range(16):
+        sum += CS16Block[i]
     # return sum/16
     # sum = (CS16Block[0] + CS16Block[4] + CS16Block[8] + CS16Block[12] + CS16Block[3] + CS16Block[7] + CS16Block[11] + CS16Block[15]) + (2*(CS16Block[1] + CS16Block[2] + CS16Block[13] + CS16Block[14])) + + (8*(CS16Block[5] + CS16Block[6] + CS16Block[9] + CS16Block[10]))
-    sum = ((CS16Block[0] + CS16Block[3] + CS16Block[12] + CS16Block[15])) + (8*(CS16Block[5] + CS16Block[6] + CS16Block[9] + CS16Block[10])) + ((CS16Block[1] + CS16Block[2] + CS16Block[4] + CS16Block[7] + CS16Block[8] + CS16Block[11] + CS16Block[13] + CS16Block[14]))
-    return (sum/48) * 100
+    # sum = ((CS16Block[0] + CS16Block[3] + CS16Block[12] + CS16Block[15])) + (8*(CS16Block[5] + CS16Block[6] + CS16Block[9] + CS16Block[10])) + ((CS16Block[1] + CS16Block[2] + CS16Block[4] + CS16Block[7] + CS16Block[8] + CS16Block[11] + CS16Block[13] + CS16Block[14]))
+    return (sum/16) * 100
 
 file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
 img1 = cv2.imread(getImgPath(file1))
 img1c = cropInto16Blocks(cropImage(img1))
-hsv1 = calculate16HSV(img1c)
+# hsv1 = calculate16HSV(img1c)
+h1, s1, v1 = calculate16HSV(img1c)
 # print(len(hsv1))
 
 file2 = input("Masukkan nama file 2 (lengkap dengan type file, e.g : Opan.png): \n")
 img2 = cv2.imread(getImgPath(file2))
 img2c = cropInto16Blocks(cropImage(img2))
-hsv2 = calculate16HSV(img2c)
-# h1, s1, v1 = getHSV(img1)
-# hsv1 = HSVHistogram(h1, s1, v1)
-# h2, s2, v2 = getHSV(img2)
-# hsv2 = HSVHistogram(h2, s2, v2)
+# hsv2 = calculate16HSV(img2c)
+h2, s2, v2 = calculate16HSV(img2c)
 
-# print(hsv1[5])
-# print(hsv1[6])
-# print(hsv1[9])
-# print(hsv1[10])
-# print()         
-# print(hsv2[5])
-# print(hsv2[6])
-# print(hsv2[9])
-# print(hsv2[10])
-# print()
-cs = cosineSimilarity16Block(hsv1, hsv2)
-# print(cs)
-print(avgCS(cs))
-
-# print(cosineSimilarity(hsv1[0], hsv2[0]))
-# print(cosineSimilarity(hsv1[1], hsv2[1]))
-# print(cosineSimilarity(hsv1[2], hsv2[2]))
-# print(cosineSimilarity(hsv1[3], hsv2[3]))
-# print(cosineSimilarity(hsv1[4], hsv2[4]))
-# print(cosineSimilarity(hsv1[5], hsv2[5]))
-# print(cosineSimilarity(hsv1[6], hsv2[6]))
-# print(cosineSimilarity(hsv1[7], hsv2[7]))
-# print(cosineSimilarity(hsv1[8], hsv2[8]))
-# print(vectorLength(hsv1))
-# print(vectorLength(hsv2))
-# print(dotProductVector(hsv1,hsv2))
+cs16 = cosineSimilarity16Block(h1,s1,v1,h2,s2,v2)
+print(h1)
+print(v1)
+print(s1)
+# print(hsv1)
+print()         
+print(h2)
+print(s2)
+print(v2)
+# print(hsv2)
+print()
+print(cs16)
+print()
+print(avgCS(cs16))
