@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"os"
 	"path/filepath"
-	"image"
+
 	// "image/color"
 	"math"
 )
@@ -20,7 +21,7 @@ func getImgPath(namaFile string) string {
 	return pathFile
 }
 
-func getHSV(img image.Image) (hVal, sVal, vVal [][] float64){
+func getHSV(img image.Image) (hVal, sVal, vVal [][]float64) {
 	bounds := img.Bounds()
 	width, height := bounds.Max.X, bounds.Max.Y
 
@@ -33,7 +34,7 @@ func getHSV(img image.Image) (hVal, sVal, vVal [][] float64){
 		sVal[i] = make([]float64, width)
 		vVal[i] = make([]float64, width)
 	}
-	
+
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			r, g, b, _ := img.At(x, y).RGBA()
@@ -70,11 +71,11 @@ func getHSV(img image.Image) (hVal, sVal, vVal [][] float64){
 			if delta != 0 {
 				switch {
 				case Cmax == normalizedR:
-					hVal[y][x] = (60 * math.Mod(((normalizedG - normalizedB) / delta), 6))
+					hVal[y][x] = (60 * math.Mod(((normalizedG-normalizedB)/delta), 6))
 				case Cmax == normalizedG:
-					hVal[y][x] = (60 * (((normalizedB-normalizedR)/delta)+2))
+					hVal[y][x] = (60 * (((normalizedB - normalizedR) / delta) + 2))
 				case Cmax == normalizedB:
-					hVal[y][x] = (60 * (((normalizedR-normalizedG)/delta)+4))
+					hVal[y][x] = (60 * (((normalizedR - normalizedG) / delta) + 4))
 				}
 			}
 			hVal[y][x] = (math.Max(0, math.Min(360, float64(hVal[y][x]))))
@@ -102,7 +103,7 @@ func getHSV(img image.Image) (hVal, sVal, vVal [][] float64){
 	return hVal, sVal, vVal
 }
 
-func dotProductVector(vector1, vector2 []float64) float64{
+func dotProductVector(vector1, vector2 []float64) float64 {
 	if len(vector1) != len(vector2) {
 		// Handle error: vectors must have the same length
 		return 0
@@ -171,33 +172,33 @@ func hsvHistogram(hVal, sVal, vVal [][]int) []int {
 	return frequencyVector
 }
 
-
 func main() {}
-	// // Example usage:  
-	// namaFile := "5.jpg"
-	// imgPath := getImgPath(namaFile)
-	// fmt.Println("Image path:", imgPath)
-	// // Example usage with an image (replace this with your actual image loading)
-	// img := image.NewRGBA(imgPath)
-	// img.Set(0, 0, color.RGBA{255, 0, 0, 255})
-	// img.Set(1, 1, color.RGBA{0, 255, 0, 255})
-	// img.Set(2, 2, color.RGBA{0, 0, 255, 255})
 
-	// hVal, sVal, vVal := getHSV(img)
+// // Example usage:
+// namaFile := "5.jpg"
+// imgPath := getImgPath(namaFile)
+// fmt.Println("Image path:", imgPath)
+// // Example usage with an image (replace this with your actual image loading)
+// img := image.NewRGBA(imgPath)
+// img.Set(0, 0, color.RGBA{255, 0, 0, 255})
+// img.Set(1, 1, color.RGBA{0, 255, 0, 255})
+// img.Set(2, 2, color.RGBA{0, 0, 255, 255})
 
-	// fmt.Println("Hue:")
-	// fmt.Println(hVal)
-	// fmt.Println("Saturation:")
-	// fmt.Println(sVal)
-	// fmt.Println("Value:")
-	// fmt.Println(vVal)
+// hVal, sVal, vVal := getHSV(img)
 
-	// vector1 := []float64{1.0, 2.0, 3.0}
-	// vector2 := []float64{4.0, 5.0, 6.0}
+// fmt.Println("Hue:")
+// fmt.Println(hVal)
+// fmt.Println("Saturation:")
+// fmt.Println(sVal)
+// fmt.Println("Value:")
+// fmt.Println(vVal)
 
-	// result := dotProductVector(vector1, vector2)
-	// fmt.Printf("Dot product: %.2f\n", result)
-	// fmt.Printf("Length 1: %.2f\n", vectorLength(vector1))
-	// fmt.Printf("Length 2: %.2f\n", vectorLength(vector2))
-	// fmt.Printf("Cosine Similarity: %.2f\n", cosineSimilarity(vector1, vector2))
+// vector1 := []float64{1.0, 2.0, 3.0}
+// vector2 := []float64{4.0, 5.0, 6.0}
+
+// result := dotProductVector(vector1, vector2)
+// fmt.Printf("Dot product: %.2f\n", result)
+// fmt.Printf("Length 1: %.2f\n", vectorLength(vector1))
+// fmt.Printf("Length 2: %.2f\n", vectorLength(vector2))
+// fmt.Printf("Cosine Similarity: %.2f\n", cosineSimilarity(vector1, vector2))
 // }
