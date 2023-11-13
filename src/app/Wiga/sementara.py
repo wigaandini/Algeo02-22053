@@ -153,7 +153,7 @@ print()
 print(len(hsv2))       
 print(hsv2)
 print()
-print(cosineSimilarity(hsv1, hsv2))
+print(cosineSimilarity(hsv1, hsv2) * 100)
 
 # print(cosineSimilarity(hsv1[0], hsv2[0]))
 # print(cosineSimilarity(hsv1[1], hsv2[1]))
