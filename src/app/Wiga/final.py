@@ -4,6 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import time
 import os
+from util import *
 
 def getImgPath(namaFile):
     path = Path().absolute()
@@ -62,12 +63,6 @@ def getHSV(img):
     )
     return hVal, sVal, vVal
 
-def dotProductVector(vector1, vector2):
-    vector1 = np.array(vector1)
-    vector2 = np.array(vector2)
-    value = np.sum(vector1.astype(float) * vector2.astype(float))
-    return value
-
 def HSVHistogram(hVal, sVal, vVal):
     hVal_flat = hVal.flatten()
     sVal_flat = sVal.flatten()
@@ -83,18 +78,6 @@ def HSVHistogram(hVal, sVal, vVal):
 
     frequency_vector = [frequency_dict[key] for key in custom_bins]
     return frequency_vector
-
-def vectorLength(vector):
-    if isinstance(vector, list):
-        vector = np.array(vector)
-    value = np.sum(vector.astype(float)**2)
-    return np.sqrt(value)
-
-def cosineSimilarity(vector_img1, vector_img2):
-    if(vectorLength(vector_img1) != 0 and vectorLength(vector_img2) != 0):
-        return (dotProductVector(vector_img1, vector_img2)/(vectorLength(vector_img1)*vectorLength(vector_img2))) * 100
-    else :
-        return 0
 
 def readImg(namaFile):
     return cv2.imread(getImgPath(namaFile))
@@ -146,10 +129,10 @@ file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): 
 start = time.time()
 dataset_path = getDatasetPath(folder)
 imgs = readDataset(dataset_path)
-print(len(imgs))
+# print(len(imgs))
 img1 = readImg(file1)
-# res = checkSimilarity(img1, imgs)
-# print(res)
+res = checkSimilarity(img1, imgs)
+print(res)
 # img1 = cv2.imread(getImgPath(file1))
 # img2 = cv2.imread(getImgPath(file2))
 # # # img2c = cropInto16Blocks(cropImage(img2))

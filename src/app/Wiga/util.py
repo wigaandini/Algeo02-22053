@@ -1,31 +1,20 @@
-def vectorLength(vector):
-    value = 0
-
-    for i in range(len(vector)):
-        value += (float(vector[i]))**2
-    
-    return value**(0.5)
+import numpy as np
+import matplotlib.pyplot as plt
 
 def dotProductVector(vector1, vector2):
-    value = 0
-
-    for i in range(len(vector1)):
-        value += float(vector1[i])*float(vector2[i])
-    
+    vector1 = np.array(vector1)
+    vector2 = np.array(vector2)
+    value = np.sum(vector1.astype(float) * vector2.astype(float))
     return value
 
+def vectorLength(vector):
+    if isinstance(vector, list):
+        vector = np.array(vector)
+    value = np.sum(vector.astype(float)**2)
+    return np.sqrt(value)
+
 def cosineSimilarity(vector_img1, vector_img2):
-    return dotProductVector(vector_img1, vector_img2)/(vectorLength(vector_img1)*vectorLength(vector_img2))
-
-def euclideanDistance(vector1, vector2):
-    sum = 0
-    for i in range(len(vector2)):
-        sum += ((float(vector1[i]) - float(vector2[i])) ** 2)
-    return sum
-
-def avgCS(vector1, vector2):
-    sum = 0
-    for i in range(len(vector1)):
-        sum += cosineSimilarity(vector1[i], vector2[i])
-    print(sum)
-    return sum/len(vector1)
+    if(vectorLength(vector_img1) != 0 and vectorLength(vector_img2) != 0):
+        return (dotProductVector(vector_img1, vector_img2)/(vectorLength(vector_img1)*vectorLength(vector_img2))) * 100
+    else :
+        return 0
