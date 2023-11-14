@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Activation</title>
+</head>
+<body>
+    <h1>Camera Activation</h1>
+    <video id="camera-preview" width="640" height="480" autoplay></video>
+    
+    <script>
+        // Get user media and display in the video element
+        async function activateCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const videoElement = document.getElementById('camera-preview');
+                videoElement.srcObject = stream;
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+            }
+        }
+
+        // Call the function when the page is loaded
+        window.onload = activateCamera;
+    </script>
+</body>
+</html>
