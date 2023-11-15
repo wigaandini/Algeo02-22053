@@ -6,11 +6,6 @@ import time
 import os
 from util import *
 
-def getImgPath(namaFile):
-    path = Path().absolute()
-    pathFile = str(path) + "\\test\\" + "\\Image\\" + namaFile
-    return pathFile
-
 def getHSV(img):
     imgnorm = img / 255.0
     b, g, r = imgnorm[:, :, 0], imgnorm[:, :, 1], imgnorm[:, :, 2]
@@ -79,29 +74,6 @@ def HSVHistogram(hVal, sVal, vVal):
     frequency_vector = [frequency_dict[key] for key in custom_bins]
     return frequency_vector
 
-def readImg(namaFile):
-    return cv2.imread(getImgPath(namaFile))
-
-def getDatasetPath(namaFolder):
-    path = Path().absolute()
-    pathData = str(path) + "\\test\\" + namaFolder
-    return pathData
-
-def readDataset(dataPath):
-    # List all files in the dataset path
-    image_files = [f for f in os.listdir(dataPath) if f.endswith(('.jpg', '.jpeg', '.png'))]
-    imgs = []
-    # Loop through each image file
-    for image_file in image_files:
-        # Construct the full path to the image
-        image_path = os.path.join(dataPath, image_file)
-
-        # Read the image using OpenCV
-        img = cv2.imread(image_path)
-        imgs.append(img)
-
-    return imgs
-
 def checkSimilarity(img, imgs):
     res = []
     h, s, v = getHSV(img)
@@ -128,10 +100,12 @@ file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): 
 
 start = time.time()
 dataset_path = getDatasetPath(folder)
-imgs = readDataset(dataset_path)
+imgs, imgpath = readDataset(dataset_path)
 # print(len(imgs))
 img1 = readImg(file1)
 res = checkSimilarity(img1, imgs)
+# print(imgpath)
+# print()
 print(res)
 # img1 = cv2.imread(getImgPath(file1))
 # img2 = cv2.imread(getImgPath(file2))
