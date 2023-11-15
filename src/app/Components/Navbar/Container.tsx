@@ -14,7 +14,7 @@ const Container : React.FC<ContainerProps> = ({children}) => {
         sm:px-2
         px-4
         py-4
-        "
+        relative z-1"
         > {children}</div>
 
     )

@@ -27,7 +27,7 @@ const Search = () => {
           <div
             onClick={() => router.push(`/balance`)}
             className="
-                text-md font-semibold px-6 text-[#F49082] transition-colors duration-200 ease-in-out hover:first-line: "
+                text-md font-semibold px-6 text-[#F49082] transition-colors duration-200 ease-in-out hover:text-gray-600"
           >
             HOME
           </div>
@@ -46,14 +46,14 @@ const Search = () => {
                 border-[#757376]
                 flex-1
                 text-center
-                transition-colors duration-200 ease-in-out hover:text-amber-200"
+                transition-colors duration-200 ease-in-out hover:text-gray-600"
           >
             ABOUT US
           </div>
           <div
             onClick={() => router.replace(`/howto`)}
             className="
-                text-sm font-semibold px-6 text-[#F49082] transition-colors duration-200 ease-in-out hover:text-amber-200"
+                text-sm font-semibold px-6 text-[#F49082] transition-colors duration-200 ease-in-out hover:text-gray-600"
           >
             HOW TO USE
           </div>
