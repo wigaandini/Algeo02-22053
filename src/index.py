@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 CORS(app)  # Initialize CORS with default options
 
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = 'UPLOAD'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def create_directory(directory):
@@ -38,9 +38,10 @@ def upload_image():
     delete_directory_contents(destination_dir)
 
     filename = secure_filename(image.filename)
-    image.save(os.path.join(destination_dir, filename))
+    path = os.path.join(destination_dir, filename)
+    image.save(path)
 
-    return jsonify({'message': 'Image uploaded successfully'})
+    return jsonify({'message': 'Image uploaded successfully', 'path': path})
 
 @app.route('/api/upload-folder', methods=['POST'])
 def upload_folder():
@@ -48,25 +49,24 @@ def upload_folder():
         return jsonify({'error': 'No file part'})
 
     images = request.files.getlist('imagedataset')
-    print(images)
-
+    
     if not images:
         return jsonify({'error': 'No selected files'})
 
     destination_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'Dataset')
     create_directory(destination_dir)
     delete_directory_contents(destination_dir)
+    # Do not delete existing contents
 
+    paths = []
     for image in images:
         filename = secure_filename(image.filename)
-        image.save(os.path.join(destination_dir, filename))
+        path = os.path.join(destination_dir, filename)
+        image.save(path)
+        paths.append(path)
 
-    return jsonify({'message': 'Folder uploaded successfully'})
+    return jsonify({'message': 'Folder uploaded successfully', 'paths': paths})
 
-
-@app.route('/')
-def home():
-    return 'Hello, World!'
 
 @app.route('/api/process_image', methods=['POST'])
 def process_images():

@@ -9,9 +9,9 @@ def getImgPath(namaFile):
     return pathFile
 
 def getColorMax(arr):
-    red = float(arr[0]/255)
+    red = float(arr[2]/255)
     green = float(arr[1]/255)
-    blue = float(arr[2]/255)
+    blue = float(arr[0]/255)
     Cmax = red
     if (green > Cmax):
         Cmax = green
@@ -20,9 +20,9 @@ def getColorMax(arr):
     return Cmax
 
 def getColorMin(arr):
-    red = float(arr[0]/255)
+    red = float(arr[2]/255)
     green = float(arr[1]/255)
-    blue = float(arr[2]/255)
+    blue = float(arr[0]/255)
     Cmin = red
     if (green < Cmin):
         Cmin = green
@@ -31,9 +31,9 @@ def getColorMin(arr):
     return Cmin
 
 def getColorMaxType(arr):
-    red = float(arr[0]/255)
+    red = float(arr[2]/255)
     green = float(arr[1]/255)
-    blue = float(arr[2]/255)
+    blue = float(arr[0]/255)
     if(red >= green and red >= blue):
         return "red"
     elif(green >= red and green >= blue):
@@ -42,9 +42,9 @@ def getColorMaxType(arr):
         return "blue"
 
 def getColorMinType(arr):
-    red = float(arr[0]/255)
+    red = float(arr[2]/255)
     green = float(arr[1]/255)
-    blue = float(arr[2]/255)
+    blue = float(arr[0]/255)
     if(red < green and red < blue):
         return "red"
     elif(green < red and green < blue):
@@ -56,9 +56,9 @@ def getDelta(Cmin, Cmax):
     return Cmax - Cmin
 
 def getH(arr):
-    red = float(arr[0]/255)
+    red = float(arr[2]/255)
     green = float(arr[1]/255)
-    blue = float(arr[2]/255)
+    blue = float(arr[0]/255)
     maxType = getColorMaxType(arr)
     Cmax = getColorMax(arr)
     Cmin = getColorMin(arr)
@@ -78,92 +78,219 @@ def getS(arr):
     Cmin = getColorMin(arr)
     delta = getDelta(Cmin, Cmax)
     if(Cmax == 0):
-        return 0
+        s = 0
     else:
-        return (delta/Cmax)
+        s = delta/Cmax
+    return s
 
+def convertH(hVal):
+    if(hVal >= 316 and hVal <= 360):
+        return 0
+    elif(hVal == 0):
+        return 0
+    elif(hVal >= 1 and hVal <= 25):
+        return 1
+    elif(hVal >= 26 and hVal <= 40):
+        return 2
+    elif(hVal >= 41 and hVal <= 120):
+        return 3
+    elif(hVal >= 121 and hVal <= 190):
+        return 4
+    elif(hVal >= 191 and hVal <= 270):
+        return 5
+    elif(hVal >= 271 and hVal <= 295):
+        return 6
+    elif(hVal >= 295 and hVal <= 315):
+        return 7 
 
-namaFile = input("Masukkan nama file (lengkap dengan type file, e.g : Opan.png): \n")
+def convertS(sVal):
+    if(sVal >= 0 and sVal < 0.2):
+        return 0
+    elif(sVal >= 0.2 and sVal < 0.7):
+        return 1
+    elif(sVal >= 0.7 and sVal <= 1):
+        return 2
+    
+def convertV(vVal):
+    if(vVal >= 0 and vVal < 0.2):
+        return 0
+    elif(vVal >= 0.2 and vVal < 0.7):
+        return 1
+    elif(vVal >= 0.7 and vVal <= 1):
+        return 2
 
-img = cv2.imread(getImgPath(namaFile))
-# cv2.imshow('image', img) 
-# cv2.waitKey(0) 
-# cv2.destroyAllWindows() 
+# def getHSVBlock(img_rgb, nRowStart, nRowEnd, nColStart, nColEnd):
+#     countH = 0
+#     countS = 0
+#     countV = 0
+#     hVal = 0
+#     sVal = 0
+#     vVal = 0
+#     for col in range(nColStart, nColEnd - 1, 1):
+#         for row in range(nRowStart, nRowEnd - 1, 1):
+#             color = img_rgb[row,col]
+#             h = getH(color)
+#             hConv = convertH(round(h))
+#             s = getS(color)
+#             sConv = convertS(s)
+#             v = getColorMax(color)
+#             vConv = convertV(v)
+#             hVal += hConv
+#             countH += 1
+#             sVal += sConv
+#             countS += 1
+#             vVal += vConv
+#             countV += 1
+#     hAvg = hVal/countH
+#     # hConv = (round(hAvg))
+#     # print(round(hAvg))
+#     sAvg = sVal/countS
+#     # sConv = convertS(sAvg)
+#     # print(sAvg)
+#     vAvg = vVal/countV
+#     # vConv = convertV(vAvg)
+#     # print(vAvg)
+#     return(str(hAvg) + str(sAvg) + str(vAvg))
 
-img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) 
-# cv2.imshow('image', img_rgb) 
-# cv2.waitKey(0) 
-# cv2.destroyAllWindows() 
+# def getVector(img_rgb):
+#     if(len(img_rgb[0] % 3 != 0)):
+#         nCol = ((len(img_rgb[0]))//3) * 3
+#     if(len(img_rgb) % 3 != 0):
+#         nRow = ((len(img_rgb))//3) * 3
 
-#You're free to do a resize or not, just for the example
-cap = cv2.resize(img_rgb, (256,256))
-for x in range (0,255,1):
-    for y in range(0,255,1):
-        color = cap[y,x]
-        # red = float(color[0]/255)
-        # green = float(color[1]/255)
-        # blue = float(color[2]/255)
-        hVal = getH(color)
-        print("H = ", hVal)
-        sVal = getS(color)
-        print("S = ", sVal)
-        vVal = getColorMax(color)
-        print("V = ", vVal)
-        
+#     check = 0
+#     startRow = 0
+#     endRow = (nRow//3) - 1
+#     startCol = 0
+#     endCol = (nCol//3) - 1 
 
+#     # print(len(img_rgb))
+#     # print(len(img_rgb[0]))
+#     # print(nRow)
+#     # print(nCol)
 
+#     # getHSVBlock(img_rgb, 98, 195, 0, 157)
 
-        # if :
-        #     max = color
-        # if color.red < max.red and color.green < max.green and color.blue < max.blue:
-        #     min = color
-        # print(red)
-        # print(green)
-        # print(blue)
-        # print(color)
+#     # res = getHSVBlock(img_rgb, startRow, endRow, startCol, endCol)
+#     # print(res)
 
-# max_channels = np.amax([np.amax(img[:,:,0]), np.amax(img[:,:,1]), np.amax(img[:,:,2])])
-# print(max_channels)
+#     hsv = ["" for check in range(9)]
 
+#     while(check < 9):
+#         while(endRow < nRow):
+#             while(endCol < nCol):
+#                 hsv[check] = getHSVBlock(img_rgb, startRow, endRow, startCol, endCol)
+#                 # print(startRow, endRow)
+#                 # print(startCol, endCol)
+#                 # print(check)
+#                 # print(hsv)
+#                 check += 1
+#                 startCol += (nCol//3)
+#                 endCol = startCol + (nCol//3) - 1 
+#             startRow += (nRow//3)
+#             endRow = startRow + (nRow//3) - 1 
+#             startCol= 0
+#             endCol = (nCol//3) - 1
+#         #     print(startRow, endRow)
+#         #     print(startCol, endCol)
+#         #     print(check)
+#         #     print(hsv)
+#         # print(startRow, endRow)
+#         # print(startCol, endCol)
+#         # print(check)
+#         # print(hsv)
 
+#     # print(hsv)
 
-# rgbImage = rand(3,3,3);
-# maxVal = max(img_rgb,[],3)
-# minVal = min(img_rgb,[],3)
-# print(maxVal)
-# print(minVal)
-# color = image_rgb[255,255]
+#     # blockNumber = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+#     # tupleHSV = list(zip(blockNumber, hsv))
+#     # print(tupleHSV)
+#     return hsv
 
-# img1 = cv2.imread(getImgPath(namaFile), cv2.IMREAD_UNCHANGED)
-# b,g,r = (img1[300, 300])
-# print (r)
-# print (g)
-# print (b)
+def getHSVBlock(img_rgb, nRowStart, nRowEnd, nColStart, nColEnd):
+    countH = 0
+    countS = 0
+    countV = 0
+    hVal = 0
+    sVal = 0
+    vVal = 0
+    for col in range(nColStart, nColEnd, 1):
+        for row in range(nRowStart, nRowEnd, 1):
+            color = img_rgb[row,col]
+            h = getH(color)
+            hRound = round(h)
+            hConv = convertH(hRound)
+            hVal += hConv
+            countH += 1
+            s = getS(color)
+            sConv = convertS(s)
+            sVal += sConv
+            countS += 1
+            v = getColorMax(color)
+            vConv = convertV(v)
+            vVal += vConv
+            countV += 1
+    hAvg = hVal/countH
+    sAvg = sVal/countS
+    vAvg = vVal/countV
+    return(hAvg, sAvg, vAvg)
 
+# def getSBlock(img_rgb, nRowStart, nRowEnd, nColStart, nColEnd):
+#     countS = 0
+#     sVal = 0
+#     for col in range(nColStart, nColEnd, 1):
+#         for row in range(nRowStart, nRowEnd, 1):
+#             color = img_rgb[row,col]
+#             s = getS(color)
+#             sConv = convertS(s)
+#             sVal += sConv
+#             countS += 1
+#     sAvg = sVal/countS
+#     return(sAvg)
 
+# def getVBlock(img_rgb, nRowStart, nRowEnd, nColStart, nColEnd):
+#     countV = 0
+#     vVal = 0
+#     for col in range(nColStart, nColEnd, 1):
+#         for row in range(nRowStart, nRowEnd, 1):
+#             color = img_rgb[row,col]
+#             v = getColorMax(color)
+#             vConv = convertV(v)
+#             vVal += vConv
+#             countV += 1
+#     vAvg = vVal/countV
+#     return(vAvg)
 
-# import cv2
-# import numpy as np
+# def getVectorHSV(img_rgb, nRowStart, nRowEnd, nColStart, nColEnd):
+#     h, s, v = getHSVBlock(img_rgb, nRowStart, nRowEnd, nColStart, nColEnd)
+#     return (str(h) + str(s) + str(v))
 
-# # Load the image
-# image_path = 'path_to_your_image.jpg'  # Replace with the path to your image
-# image = cv2.imread(image_path)
+def getVector(img_rgb):
+    nCol = len(img_rgb[0]) // 3 * 3
+    nRow = len(img_rgb) // 3 * 3
 
-# # Convert the image to the HSV color space
-# hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    nRowDiv3 = nRow // 3
+    nColDiv3 = nCol // 3
 
-# # Define the lower and upper bounds for the red color in HSV
-# lower_red = np.array([0, 50, 50])
-# upper_red = np.array([10, 255, 255])
+    check = 0
+    startRow = 0
+    endRow = nRowDiv3 - 1
+    startCol = 0
+    endCol = nColDiv3 - 1 
 
-# # Create a mask to detect the red color
-# mask = cv2.inRange(hsv_image, lower_red, upper_red)
+    hsv = np.zeros((9, 3), dtype=int)
 
-# # Bitwise-AND mask and original image
-# res = cv2.bitwise_and(image, image, mask=mask)
+    while check < 9:
+        while endRow < nRow:
+            while endCol < nCol:
+                for i in range(3):
+                    hsv[check][0], hsv[check][1], hsv[check][2] = getHSVBlock(img_rgb, startRow, endRow, startCol, endCol)
+                check += 1
+                startCol += nColDiv3
+                endCol = startCol + nColDiv3 - 1 
+            startRow += nRowDiv3
+            endRow = startRow + nRowDiv3 - 1 
+            startCol = 0
+            endCol = nColDiv3 - 1
 
-# # Display the original image and the result
-# cv2.imshow('Original Image', image)
-# cv2.imshow('Red Detection Result', res)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+    return hsv
