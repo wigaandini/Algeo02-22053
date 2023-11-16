@@ -4,9 +4,10 @@ import { useState, useRef, useEffect } from "react";
 import placeholder from "../../public/images/placeholder.jpg";
 import Card from "../card";
 interface response {
-  similarity: number;
-  index: number;
+  similarity_score: number;
+  image_path: string;
 }
+
 const Form = () => {
   const [image, setImage] = useState<File | null>(null);
   const [imagedataset, setImagedataset] = useState<File[] | null>(null);
@@ -53,9 +54,6 @@ const Form = () => {
       }
     }
   };
-  useEffect(() => {
-    console.log("imagedataset:", imagedataset);
-  }, [imagedataset]);
 
   const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
@@ -63,7 +61,7 @@ const Form = () => {
     if (selectedFiles) {
       const filesArray = Array.from(selectedFiles);
       setImagedataset(filesArray);
-      
+      const randomSeed = Math.floor(Math.random() * 1000000).toString();
       const chunkSize = 999; // Define your desired chunk size
 
       for (let i = 0; i < filesArray.length; i += chunkSize) {
@@ -73,6 +71,7 @@ const Form = () => {
         chunk.forEach((file) => {
           formData.append("imagedataset", file);
         });
+        formData.append("seed", randomSeed);
 
         try {
           const res = await fetch("http://localhost:5000/api/upload-folder", {
@@ -88,7 +87,6 @@ const Form = () => {
         }
       }
     }
-    
   };
 
   const itemsPerPage = 6;
@@ -97,7 +95,7 @@ const Form = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentImages = result?.slice(indexOfFirstItem, indexOfLastItem);
 
-  const totalPages = Math.ceil((imagedataset?.length || 0) / itemsPerPage);
+  const totalPages = Math.ceil((result?.length || 0) / itemsPerPage);
   const calculatePageRange = () => {
     const totalPageCount = Math.min(5, totalPages);
     const startPage = Math.max(1, currentPage - Math.floor(totalPageCount / 2));
@@ -119,32 +117,34 @@ const Form = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setStartTime(new Date().getTime()); // Set the start time
+
     try {
       const formData = new FormData();
-      formData.append("image", image as Blob);
-      if (imagedataset) {
-        imagedataset.forEach((file) => {
-          formData.append("imagedataset", file);
-        });
-      }
-      setStartTime(new Date().getTime());
+      formData.append("file_name", image!.name);
 
-      const res = await fetch("http://localhost:5000/api/process_image", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "http://localhost:5000/api/process_image_similarity",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const data = await res.json();
 
       setLoading(false);
+      setStartTime(null);
+
       if (res.ok) {
-        setResult(data.result);
+        setResult(data.similarity_results);
       } else {
         console.log("Error");
       }
     } catch (error) {
-      console.log("Error 2");
+      console.error("Error:", error);
       setLoading(false);
+      setResult(null);
       setStartTime(null);
     }
   };
@@ -256,7 +256,7 @@ const Form = () => {
         ) : currentImages ? (
           currentImages.length > 0 ? (
             <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl py-10">{`Database Amount : ${imagedataset?.length} images`}</h1>
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl py-10">{`Result Amount : ${result?.length} images`}</h1>
               <div className="flex flex-wrap justify-center gap-10">
                 {currentImages.map((response, index) => (
                   <div
@@ -264,8 +264,8 @@ const Form = () => {
                     className={`relative flex items-center justify-center w-[160px] md:w-[240px] xl:w-[320px] h-[160px] md:h-[240px] xl:h-[320px] mb-4 mt-4`}
                   >
                     <Card
-                      image={imagedataset![response.index]}
-                      similarity={response.similarity}
+                      image={response.image_path}
+                      similarity={response.similarity_score}
                     />
                   </div>
                 ))}

@@ -1,17 +1,18 @@
 
-
 interface CardProps {
-  image: File;
+  image: string;
   similarity: number;
 }
 
 const Card: React.FC<CardProps> = ({ image, similarity }) => {
+  
   return (
     <div className="card">
       <img
-        src={URL.createObjectURL(image)}
+        src={image}
         className="card-image"
         alt="Uploaded Image"
+
       />
       <div className="card-overlay">
         <p className="similarity-text">Similarity: {similarity}%</p>

@@ -89,23 +89,57 @@ def checkSimilarity(img, imgs):
     sorted_res = sorted(res, key=lambda x: x[1], reverse=True)
     return sorted_res
 
-
+folder = input("Nama folder dataset: ")
+# print(imgs)
 
 file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
-
+# file2 = input("Masukkan nama file 2 (lengkap dengan type file, e.g : Opan.png): \n")
+# # # img1c = cropInto16Blocks(cropImage(img1))
+# # # hsv1 = calculate16HSV(img1c)
+# # # print(len(hsv1))
 
 start = time.time()
-dataset_path = getDatasetPath()
+dataset_path = getDatasetPath(folder)
 imgs, imgpath = readDataset(dataset_path)
-
+# print(len(imgs))
 img1 = readImg(file1)
 res = checkSimilarity(img1, imgs)
-
+# print(imgpath)
+# print()
 print(res)
+# img1 = cv2.imread(getImgPath(file1))
+# img2 = cv2.imread(getImgPath(file2))
+# # # img2c = cropInto16Blocks(cropImage(img2))
+# # # hsv2 = calculate16HSV(img2)
+# h1, s1, v1 = getHSV(img1)
+# hsv1 = HSVHistogram(h1, s1, v1)
+# h2, s2, v2 = getHSV(img2)
+# hsv2 = HSVHistogram(h2, s2, v2)
 
+# # print(len(hsv1))
+# # print(hsv1)
+# # print()  
+# # print(len(hsv2))       
+# # print(hsv2)
+# # print()
+# print(cosineSimilarity(hsv1, hsv2) * 100)
+# # print()
 end = time.time()
+ 
 # # print the difference between start 
 # # and end time in milli. secs
 print("The time of execution of above program is :",
       (end-start), "s")
 
+# print(cosineSimilarity(hsv1[0], hsv2[0]))
+# print(cosineSimilarity(hsv1[1], hsv2[1]))
+# print(cosineSimilarity(hsv1[2], hsv2[2]))
+# print(cosineSimilarity(hsv1[3], hsv2[3]))
+# print(cosineSimilarity(hsv1[4], hsv2[4]))
+# print(cosineSimilarity(hsv1[5], hsv2[5]))
+# print(cosineSimilarity(hsv1[6], hsv2[6]))
+# print(cosineSimilarity(hsv1[7], hsv2[7]))
+# print(cosineSimilarity(hsv1[8], hsv2[8]))
+# print(vectorLength(hsv1))
+# print(vectorLength(hsv2))
+# print(dotProductVector(hsv1,hsv2))

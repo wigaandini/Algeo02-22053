@@ -7,15 +7,15 @@ import os
 
 def getImgPath(namaFile):
     path = Path().absolute()
-    pathFile = str(path) + "\\test\\" + "\\Image\\" + namaFile
+    pathFile = str(path) + "\\src\\" + "\\UPLOAD\\" + "\\Image\\" + namaFile
     return pathFile
 
 def readImg(namaFile):
     return cv2.imread(getImgPath(namaFile))
 
-def getDatasetPath(namaFolder):
+def getDatasetPath():
     path = Path().absolute()
-    pathData = str(path) + "\\test\\" + namaFolder
+    pathData = str(path) + "\\src\\" + "\\UPLOAD\\" + "Dataset"
     return pathData
 
 def readDataset(dataPath):
