@@ -61,13 +61,13 @@ def createGLCM90(img):
     
     return np.array(glcm)
 
-def createGLCM45(img): #ada yg harus dibenerin
+def createGLCM45(img):
     glcm = [[0 for j in range(256)] for i in range(256)]
 
     for i in range(1, len(img)):
         tempi = i
         j = 0
-        while tempi > 0:
+        while tempi > 0 and j < len(img[0])-1:
             glcm[img[tempi][j]][img[tempi-1][j+1]] += 1
             tempi -= 1
             j += 1
@@ -75,28 +75,28 @@ def createGLCM45(img): #ada yg harus dibenerin
     for j in range(1, len(img[0])-1):
         tempj = j
         i = len(img)-1
-        while tempj < len(img)-1:
+        while tempj < len(img[0])-1 and i > 0:
             glcm[img[i][tempj]][img[i-1][tempj+1]] += 1
             i -= 1
             tempj += 1
     
     return np.array(glcm)
 
-def createGLCM135(img): #ada yg harus dibenerin
+def createGLCM135(img):
     glcm = [[0 for j in range(256)] for i in range(256)]
 
     for i in range(1, len(img)):
         tempi = i
         j = len(img[0])-1
-        while tempi > 0:
+        while tempi > 0 and j > 0:
             glcm[img[tempi][j]][img[tempi-1][j-1]] += 1
             tempi -= 1
             j -= 1
-    
+
     for j in range(len(img[0])-2, 0, -1):
         tempj = j
-        i = len(img[0])-1
-        while i > 0:
+        i = len(img)-1
+        while tempj > 0 and i > 0:
             glcm[img[i][tempj]][img[i-1][tempj-1]] += 1
             i -= 1
             tempj -= 1
@@ -196,9 +196,8 @@ def correlation(matrix):
 
     for i in range(256):
         for j in range(256):
-            if (((stdi**2)*(stdj**2))**0.5) == 0:
-                print(matrix[i][j])
-            value += matrix[i][j]*(((i-meani)*(j-meanj))/(((stdi**2)*(stdj**2))**0.5))
+            if (((stdi**2)*(stdj**2))**0.5) != 0:
+                value += matrix[i][j]*(((i-meani)*(j-meanj))/(((stdi**2)*(stdj**2))**0.5))
 
     return value
 
