@@ -1,31 +1,54 @@
-def vectorLength(vector):
-    value = 0
+import cv2
+import numpy as np
+from pathlib import Path
+import matplotlib.pyplot as plt
+import time
+import os
 
-    for i in range(len(vector)):
-        value += (float(vector[i]))**2
-    
-    return value**(0.5)
+def getImgPath(namaFile):
+    path = Path().absolute()
+    pathFile = str(path) + "\\src\\" + "\\UPLOAD\\" + "\\Image\\" + namaFile
+    return pathFile
+
+def readImg(namaFile):
+    return cv2.imread(getImgPath(namaFile))
+
+def getDatasetPath():
+    path = Path().absolute()
+    pathData = str(path) + "\\src\\" + "\\UPLOAD\\" + "Dataset"
+    return pathData
+
+def readDataset(dataPath):
+    # List all files in the dataset path
+    image_files = [f for f in os.listdir(dataPath) if f.endswith(('.jpg', '.jpeg', '.png'))]
+    imgs = []
+    imgpath = []
+    # Loop through each image file
+    for image_file in image_files:
+        # Construct the full path to the image
+        image_path = os.path.join(dataPath, image_file)
+        imgpath.append(image_path)
+
+        # Read the image using OpenCV
+        img = cv2.imread(image_path)
+        imgs.append(img)
+
+    return imgs, imgpath
 
 def dotProductVector(vector1, vector2):
-    value = 0
-
-    for i in range(len(vector1)):
-        value += float(vector1[i])*float(vector2[i])
-    
+    vector1 = np.array(vector1)
+    vector2 = np.array(vector2)
+    value = np.sum(vector1.astype(float) * vector2.astype(float))
     return value
 
+def vectorLength(vector):
+    if isinstance(vector, list):
+        vector = np.array(vector)
+    value = np.sum(vector.astype(float)**2)
+    return np.sqrt(value)
+
 def cosineSimilarity(vector_img1, vector_img2):
-    return dotProductVector(vector_img1, vector_img2)/(vectorLength(vector_img1)*vectorLength(vector_img2))
-
-def euclideanDistance(vector1, vector2):
-    sum = 0
-    for i in range(len(vector2)):
-        sum += ((float(vector1[i]) - float(vector2[i])) ** 2)
-    return sum
-
-def avgCS(vector1, vector2):
-    sum = 0
-    for i in range(len(vector1)):
-        sum += cosineSimilarity(vector1[i], vector2[i])
-    print(sum)
-    return sum/len(vector1)
+    if(vectorLength(vector_img1) != 0 and vectorLength(vector_img2) != 0):
+        return (dotProductVector(vector_img1, vector_img2)/(vectorLength(vector_img1)*vectorLength(vector_img2))) * 100
+    else :
+        re
