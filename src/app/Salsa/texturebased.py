@@ -78,11 +78,7 @@ def normalizedSymmetricGLCM(glcm):
     return normalized_glcm/elmt_sum
 
 def energy(glcm):
-    squared_matrix = np.square(glcm)
-    sum_of_squares = np.sum(squared_matrix)
-    result = np.sqrt(sum_of_squares)
-
-    return result
+    return np.sqrt(np.sum(np.square(glcm)))
 
 def dissimilarity(glcm):
     i, j = np.indices(glcm.shape)
@@ -104,32 +100,6 @@ def homogeneity(glcm):
     i, j = np.indices(glcm.shape)
 
     return np.sum(glcm / (1 + (i - j)**2))
-
-def mui(glcm):
-    i, j = np.indices(glcm.shape)
-
-    return np.sum(i * glcm)
-
-def muj(glcm):
-    i, j = np.indices(glcm.shape)
-
-    return np.sum(j * glcm)
-
-def sigmai(glcm):
-    i, j = np.indices(glcm.shape)
-    meani = np.sum(i * glcm) / np.sum(glcm)
-    squared_diff = (i - meani)**2
-    sum_squared_diff = np.sum(glcm * squared_diff)
-    
-    return np.sqrt(sum_squared_diff)
-
-def sigmaj(glcm):
-    i, j = np.indices(glcm.shape)
-    meanj = np.sum(j * glcm) / np.sum(glcm)
-    squared_diff = (j - meanj)**2
-    sum_squared_diff = np.sum(glcm * squared_diff)
-    
-    return np.sqrt(sum_squared_diff)
 
 def correlation(glcm):
     i, j = np.indices(glcm.shape)
