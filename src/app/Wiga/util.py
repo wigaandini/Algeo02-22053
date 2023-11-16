@@ -4,51 +4,48 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import time
 import os
+import csv
 
-def getImgPath(namaFile):
-    path = Path().absolute()
-    pathFile = str(path) + "\\test\\" + "\\Image\\" + namaFile
-    return pathFile
+def get_img_path(file_name):
+    current_path = Path().absolute()
+    return str(current_path) + "\\public\\" + "\\Image\\" + file_name
 
-def readImg(namaFile):
-    return cv2.imread(getImgPath(namaFile))
+def read_img(file_name):
+    return cv2.imread(get_img_path(file_name))
 
-def getDatasetPath(namaFolder):
-    path = Path().absolute()
-    pathData = str(path) + "\\test\\" + namaFolder
-    return pathData
+def get_dataset_path():
+    current_path = Path().absolute()
+    return current_path / "public" / "Dataset"
 
-def readDataset(dataPath):
-    # List all files in the dataset path
-    image_files = [f for f in os.listdir(dataPath) if f.endswith(('.jpg', '.jpeg', '.png'))]
-    imgs = []
-    imgpath = []
-    # Loop through each image file
-    for image_file in image_files:
-        # Construct the full path to the image
-        image_path = os.path.join(dataPath, image_file)
-        imgpath.append(image_path)
+def read_dataset(data_path):
+    image_files = [f for f in os.listdir(data_path) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+    img_paths = [os.path.join(data_path, file) for file in image_files]
+    imgs = np.array([cv2.imread(img_path) for img_path in img_paths])
 
-        # Read the image using OpenCV
-        img = cv2.imread(image_path)
-        imgs.append(img)
+    return imgs, img_paths
 
-    return imgs, imgpath
+def dot_product_vector(vector1, vector2):
+    return np.sum(vector1.astype(float) * vector2.astype(float))
 
-def dotProductVector(vector1, vector2):
-    vector1 = np.array(vector1)
-    vector2 = np.array(vector2)
-    value = np.sum(vector1.astype(float) * vector2.astype(float))
-    return value
+def vector_length(vector):
+    vector = np.array(vector)
+    return np.sqrt(np.sum(vector.astype(float)**2))
 
-def vectorLength(vector):
-    if isinstance(vector, list):
-        vector = np.array(vector)
-    value = np.sum(vector.astype(float)**2)
-    return np.sqrt(value)
+def cosine_similarity(vector_img1, vector_img2):
+    vector_img1 = np.array(vector_img1)
+    vector_img2 = np.array(vector_img2)
 
-def cosineSimilarity(vector_img1, vector_img2):
-    if(vectorLength(vector_img1) != 0 and vectorLength(vector_img2) != 0):
-        return (dotProductVector(vector_img1, vector_img2)/(vectorLength(vector_img1)*vectorLength(vector_img2))) * 100
-    else :
+    if vector_length(vector_img1) != 0 and vector_length(vector_img2) != 0:
+        return (dot_product_vector(vector_img1, vector_img2) /
+                (vector_length(vector_img1) * vector_length(vector_img2))) * 100
+    else:
         return 0
+    
+def write_csv(imgs, imgpath):
+    fields = ['img_path', 'img_vector']
+    filename = "cache.csv"
+    with open(filename, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(fields)
+        for i in range(len(imgs)):
+            csvwriter.writerow([imgpath[i], imgs[i]])
