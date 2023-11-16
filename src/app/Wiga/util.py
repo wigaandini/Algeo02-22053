@@ -7,15 +7,15 @@ import os
 
 def getImgPath(namaFile):
     path = Path().absolute()
-    pathFile = str(path) + "\\src\\" + "\\UPLOAD\\" + "\\Image\\" + namaFile
+    pathFile = str(path) + "\\test\\" + "\\Image\\" + namaFile
     return pathFile
 
 def readImg(namaFile):
     return cv2.imread(getImgPath(namaFile))
 
-def getDatasetPath():
+def getDatasetPath(namaFolder):
     path = Path().absolute()
-    pathData = str(path) + "\\src\\" + "\\UPLOAD\\" + "Dataset"
+    pathData = str(path) + "\\test\\" + namaFolder
     return pathData
 
 def readDataset(dataPath):
@@ -51,4 +51,4 @@ def cosineSimilarity(vector_img1, vector_img2):
     if(vectorLength(vector_img1) != 0 and vectorLength(vector_img2) != 0):
         return (dotProductVector(vector_img1, vector_img2)/(vectorLength(vector_img1)*vectorLength(vector_img2))) * 100
     else :
-        re
+        return 0
