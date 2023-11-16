@@ -1,219 +1,149 @@
-import cv2
-import math
 import numpy as np
+import numpy.ma as ma
 
-def elmtSumMatrix(matrix):
-    elmt_sum = 0
-    for i in range(len(matrix)):
-        for j in range(len(matrix[0])):
-            elmt_sum += matrix[i][j]
-    
-    return elmt_sum
-
-def transposeMatrix(matrix):
-    transposed_matrix = [[0 for j in range(len(matrix[0]))] for i in range(len(matrix))]
-
-    for i in range(len(matrix)):
-        for j in range(len(matrix[0])):
-            transposed_matrix[i][j] = matrix[j][i]
-    
-    return np.array(transposed_matrix)
-
-def symmetricMatrix(matrix):
-    transposed_matrix = transposeMatrix(matrix)
-    symmetric_matrix = np.add(matrix, transposed_matrix)
-    
-    return np.array(symmetric_matrix)
-
-def normalizedMatrix(matrix):
-    elmt_sum = elmtSumMatrix(matrix)
-    normalized_matrix = [[0 for j in range(len(matrix[0]))] for i in range(len(matrix))]
-
-    for i in range(len(matrix)):
-        for j in range(len(matrix[0])):
-            normalized_matrix[i][j] = matrix[i][j]/elmt_sum
-
-    return np.array(normalized_matrix)
-
-def grayscaleImg(imgFile):
-    img = cv2.imread(imgFile)
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-    img_grayscale = np.round(0.299 * img_rgb[:, :, 0] + 0.587 * img_rgb[:, :, 1] + 0.114 * img_rgb[:, :, 2]).astype(np.uint8)
+def grayscaleImg(img):
+    img_grayscale = np.round(0.299 * img[:, :, 2] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 0]).astype(np.uint8)
     
     return img_grayscale
 
 def createGLCM0(img, distance=1):
-    glcm = [[0 for j in range(256)] for i in range(256)]
+    rows, cols = img.shape
+    glcm = np.zeros((256, 256), dtype=int)
 
-    for i in range(len(img)):
-        for j in range(len(img[0])-distance):
-            glcm[img[i][j]][img[i][j+distance]] += 1
+    for i in range(rows):
+        for j in range(cols - distance):
+            glcm[img[i, j], img[i, j + distance]] += 1
     
-    return np.array(glcm)
+    return glcm
 
 def createGLCM90(img):
-    glcm = [[0 for j in range(256)] for i in range(256)]
+    rows, cols = img.shape
+    glcm = np.zeros((256, 256), dtype=int)
 
-    for j in range(len(img[0])):
-        for i in range(len(img)-1, 0, -1):
-            glcm[img[i][j]][img[i-1][j]] += 1
+    for j in range(cols):
+        for i in range(rows - 1, 0, -1):
+            glcm[img[i, j], img[i-1, j]] += 1
     
-    return np.array(glcm)
+    return glcm
 
 def createGLCM45(img):
-    glcm = [[0 for j in range(256)] for i in range(256)]
+    rows, cols = img.shape
+    glcm = np.zeros((256, 256), dtype=int)
 
-    for i in range(1, len(img)):
+    for i in range(1, rows):
         tempi = i
         j = 0
-        while tempi > 0 and j < len(img[0])-1:
-            glcm[img[tempi][j]][img[tempi-1][j+1]] += 1
+        while tempi > 0 and j < cols - 1:
+            glcm[img[tempi, j], img[tempi-1, j+1]] += 1
             tempi -= 1
             j += 1
-    
-    for j in range(1, len(img[0])-1):
+
+    for j in range(1, cols - 1):
         tempj = j
-        i = len(img)-1
-        while tempj < len(img[0])-1 and i > 0:
-            glcm[img[i][tempj]][img[i-1][tempj+1]] += 1
+        i = rows - 1
+        while tempj < cols - 1 and i > 0:
+            glcm[img[i, tempj], img[i-1, tempj+1]] += 1
             i -= 1
             tempj += 1
     
-    return np.array(glcm)
+    return glcm
 
 def createGLCM135(img):
-    glcm = [[0 for j in range(256)] for i in range(256)]
+    rows, cols = img.shape
+    glcm = np.zeros((256, 256), dtype=int)
 
-    for i in range(1, len(img)):
+    for i in range(1, rows):
         tempi = i
-        j = len(img[0])-1
+        j = cols - 1
         while tempi > 0 and j > 0:
-            glcm[img[tempi][j]][img[tempi-1][j-1]] += 1
+            glcm[img[tempi, j], img[tempi-1, j-1]] += 1
             tempi -= 1
             j -= 1
 
-    for j in range(len(img[0])-2, 0, -1):
+    for j in range(cols - 2, 0, -1):
         tempj = j
-        i = len(img)-1
+        i = rows - 1
         while tempj > 0 and i > 0:
-            glcm[img[i][tempj]][img[i-1][tempj-1]] += 1
+            glcm[img[i, tempj], img[i-1, tempj-1]] += 1
             i -= 1
             tempj -= 1
     
-    return np.array(glcm)
+    return glcm
 
-def energy(matrix):
-    value = 0
+def normalizedSymmetricGLCM(glcm):
+    normalized_glcm = np.transpose(glcm)
+    normalized_glcm = np.add(glcm, normalized_glcm)
 
-    for i in range(256):
-        for j in range(256):
-            value += (matrix[i][j])**2
+    elmt_sum = np.sum(normalized_glcm)
+    return normalized_glcm/elmt_sum
+
+def energy(glcm):
+    squared_matrix = np.square(glcm)
+    sum_of_squares = np.sum(squared_matrix)
+    result = np.sqrt(sum_of_squares)
+
+    return result
+
+def dissimilarity(glcm):
+    i, j = np.indices(glcm.shape)
+
+    return np.sum(glcm * np.abs(i - j))
+
+def entropy(glcm):
+    non_zero_entries = ma.masked_equal(glcm, 0)
+    logarithms = ma.log(non_zero_entries)
     
-    return value**(0.5)
+    return -np.sum(glcm * logarithms)
 
-def dissimilarity(matrix):
-    value = 0
+def contrast(glcm):
+    i, j = np.indices(glcm.shape)
 
-    for i in range(256):
-        for j in range(256):
-            value += matrix[i][j]*abs(i-j)
+    return np.sum(glcm * (i - j)**2)
+
+def homogeneity(glcm):
+    i, j = np.indices(glcm.shape)
+
+    return np.sum(glcm / (1 + (i - j)**2))
+
+def mui(glcm):
+    i, j = np.indices(glcm.shape)
+
+    return np.sum(i * glcm)
+
+def muj(glcm):
+    i, j = np.indices(glcm.shape)
+
+    return np.sum(j * glcm)
+
+def sigmai(glcm):
+    i, j = np.indices(glcm.shape)
+    meani = np.sum(i * glcm) / np.sum(glcm)
+    squared_diff = (i - meani)**2
+    sum_squared_diff = np.sum(glcm * squared_diff)
     
-    return value
+    return np.sqrt(sum_squared_diff)
 
-def entropy(matrix):
-    value = 0
-
-    for i in range(256):
-        for j in range(256):
-            if matrix[i][j] != 0:
-                value -= matrix[i][j]*(math.log(matrix[i][j]))
+def sigmaj(glcm):
+    i, j = np.indices(glcm.shape)
+    meanj = np.sum(j * glcm) / np.sum(glcm)
+    squared_diff = (j - meanj)**2
+    sum_squared_diff = np.sum(glcm * squared_diff)
     
-    return value
+    return np.sqrt(sum_squared_diff)
 
-def contrast(matrix):
-    value = 0
-
-    for i in range(256):
-        for j in range(256):
-            value += matrix[i][j]*((i-j)**2)
+def correlation(glcm):
+    i, j = np.indices(glcm.shape)
+    meani = np.sum(i * glcm) / np.sum(glcm)
+    meanj = np.sum(j * glcm) / np.sum(glcm)
+    stdi = np.sqrt(np.sum(glcm * (i - meani)**2) / np.sum(glcm))
+    stdj = np.sqrt(np.sum(glcm * (j - meanj)**2) / np.sum(glcm))
     
-    return value
-
-def homogeneity(matrix):
-    value = 0
-
-    for i in range(256):
-        for j in range(256):
-            value += matrix[i][j]/(1+((i-j)**2))
+    correlation_matrix = ((i - meani) * (j - meanj)) / np.where((stdi != 0) & (stdj != 0), (stdi * stdj), 1)
+    correlation_matrix = np.nan_to_num(correlation_matrix)
     
-    return value
+    return np.sum(glcm * correlation_matrix)
 
-def mui(matrix):
-    value = 0
-
-    for i in range(256):
-        for j in range(256):
-            value += i*matrix[i][j]
-    
-    return value
-
-def muj(matrix):
-    value = 0
-
-    for i in range(256):
-        for j in range(256):
-            value += j*matrix[i][j]
-
-    return value
-
-def sigmai(matrix):
-    value = 0
-    meani = mui(matrix)
-
-    for i in range(256):
-        for j in range(256):
-            value += matrix[i][j]*((i-meani)**2)
-    
-    return value**0.5
-
-def sigmaj(matrix): #standard deviation
-    value = 0
-    meanj = muj(matrix)
-
-    for i in range(256):
-        for j in range(256):
-            value += matrix[i][j]*((j-meanj)**2)
-    
-    return value**0.5
-
-def correlation(matrix):
-    value = 0
-    meani = mui(matrix)
-    meanj = muj(matrix)
-    stdi = sigmai(matrix)
-    stdj = sigmaj(matrix)
-
-    for i in range(256):
-        for j in range(256):
-            if (((stdi**2)*(stdj**2))**0.5) != 0:
-                value += matrix[i][j]*(((i-meani)*(j-meanj))/(((stdi**2)*(stdj**2))**0.5))
-
-    return value
-
-def textureBasedVector(matrix):
-    vector = [0 for i in range(6)]
-    vector[0] = contrast(matrix)
-    vector[1] = homogeneity(matrix)
-    vector[2] = entropy(matrix)
-    vector[3] = energy(matrix)
-    vector[4] = correlation(matrix)
-    vector[5] = dissimilarity(matrix)
+def textureBasedVector(glcm):
+    vector = np.array([contrast(glcm), homogeneity(glcm), entropy(glcm), energy(glcm), correlation(glcm), dissimilarity(glcm)])
     
     return vector
-
-def normalizedGLCM(glcm):
-    normalized_glcm = symmetricMatrix(glcm)
-    normalized_glcm = normalizedMatrix(normalized_glcm)
-
-    return np.array(normalized_glcm)
