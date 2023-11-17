@@ -125,7 +125,7 @@ def checkTextureSimilarity(img, imgs, imgpath):
     res = []
     glcm = normalizedSymmetricGLCM(createGLCM0(grayscaleImg(img)))
 
-    for i in range(100):
+    for i in range(len(imgs)):
         glcmi = normalizedSymmetricGLCM(createGLCM0(grayscaleImg(imgs[i])))
         cs = cosineSimilarity(glcm , glcmi)
         print(cs)
