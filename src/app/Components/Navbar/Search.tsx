@@ -25,7 +25,7 @@ const Search = () => {
             flex flex-row items-center justify-between "
         >
           <div
-            onClick={() => router.push(`/balance`)}
+            onClick={() => router.push(`/`)}
             className="
                 text-md font-semibold px-6 text-[#F49082] transition-colors duration-200 ease-in-out hover:text-gray-600"
           >
@@ -56,6 +56,13 @@ const Search = () => {
                 text-sm font-semibold px-6 text-[#F49082] transition-colors duration-200 ease-in-out hover:text-gray-600"
           >
             HOW TO USE
+          </div>
+          <div
+            onClick={() => router.replace(`/camera`)}
+            className="
+                text-sm font-semibold px-6 text-[#F49082] transition-colors duration-200 ease-in-out hover:text-gray-600"
+          >
+            Camera
           </div>
         </div>
       </div>

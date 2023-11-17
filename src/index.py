@@ -3,7 +3,8 @@ from flask_cors import CORS
 import os
 from os.path import relpath
 from werkzeug.utils import secure_filename
-from app.Wiga.tesfinal import read_img, get_dataset_path, read_dataset, check_similarity
+from multiprocessing import Pool
+from app.Wiga.tesmulti import read_img, get_dataset_path, read_dataset, parallel_check_similarity
 
 
 app = Flask(__name__)
@@ -93,7 +94,10 @@ def upload_folder():
     return jsonify({'message': 'Folder uploaded successfully', 'paths': paths})
 
 
-@app.route('/api/process_image_similarity', methods=['POST'])
+def process_similarity(args):
+    return check_similarity(*args)
+
+@app.route('/api/process_image_similarity/Color', methods=['POST'])
 def process_image_similarity():
     try:
         file_name = request.form.get('file_name')
@@ -101,7 +105,7 @@ def process_image_similarity():
 
         dataset_path = get_dataset_path()
         imgs, img_paths = read_dataset(dataset_path)
-        result = check_similarity(img, imgs)
+        result = parallel_check_similarity(img, imgs)
 
         # Construct a list of dictionaries containing image paths and similarity scores
         similarity_results = [{'image_path': relpath(img_paths[int(index)], app.config['UPLOAD_FOLDER']), 'similarity_score': float(score)} for index, score in result]

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import placeholder from "../../public/images/placeholder.jpg";
 import Card from "../card";
+
 interface response {
   similarity_score: number;
   image_path: string;
@@ -11,17 +12,28 @@ interface response {
 const Form = () => {
   const [image, setImage] = useState<File | null>(null);
   const [imagedataset, setImagedataset] = useState<File[] | null>(null);
-
+  const [method, setMethod] = useState<string>("Color");
   const [startTime, setStartTime] = useState<number | null>(null);
   const [result, setResult] = useState<response[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0); // Add state for elapsed time
+
   const inputRef = useRef<HTMLInputElement>(null);
   const inputRefFolder = useRef<HTMLInputElement>(null);
-
+  const [backgroundColor, setBackgroundColor] = useState<string>(
+    "radial-gradient(circle, #fecccb, #ffd5c8, #ffe0c9, #ffebcc, #fef6d4)"
+  );
   const handlePhotoClick = () => {
     if (inputRef.current) {
       inputRef.current.click();
+    }
+  };
+
+  const handleToggle = () => {
+    if (method === "Color") {
+      setMethod("Texture");
+    } else {
+      setMethod("Color");
     }
   };
 
@@ -118,13 +130,14 @@ const Form = () => {
     e.preventDefault();
     setLoading(true);
     setStartTime(new Date().getTime()); // Set the start time
+    setCurrentPage(1);
 
     try {
       const formData = new FormData();
       formData.append("file_name", image!.name);
 
       const res = await fetch(
-        "http://localhost:5000/api/process_image_similarity",
+        `http://localhost:5000/api/process_image_similarity/${method}`,
         {
           method: "POST",
           body: formData,
@@ -140,6 +153,7 @@ const Form = () => {
         setResult(data.similarity_results);
       } else {
         console.log("Error");
+        setResult(null);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -150,6 +164,12 @@ const Form = () => {
   };
 
   useEffect(() => {
+    setBackgroundColor(
+      "radial-gradient(circle, #fecccb, #ffd5c8, #ffe0c9, #ffebcc, #fef6d4)"
+    );
+  }, []);
+
+  useEffect(() => {
     let intervalId: NodeJS.Timeout;
 
     // Update elapsed time every second
@@ -157,8 +177,8 @@ const Form = () => {
       intervalId = setInterval(() => {
         const currentTime = new Date().getTime();
         const elapsedTime = (currentTime - startTime) / 1000; // Convert to seconds
-        setElapsedTime(elapsedTime);
-      }, 100);
+        setElapsedTime(elapsedTime); // Update state with the elapsed time
+      }, 1000);
     }
 
     // Cleanup the interval when the component is unmounted or when the search is complete
@@ -171,8 +191,7 @@ const Form = () => {
     <div
       className="py-10 mt-5  rounded-lg w-[85%] justify-center"
       style={{
-        background:
-          "radial-gradient(circle, #fecccb, #ffd5c8, #ffe0c9, #ffebcc, #fef6d4);",
+        background: backgroundColor,
         paddingLeft: "20px",
         paddingRight: "20px",
       }}
@@ -256,7 +275,7 @@ const Form = () => {
         ) : currentImages ? (
           currentImages.length > 0 ? (
             <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl py-10">{`Result Amount : ${result?.length} images`}</h1>
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl py-10">{`${result?.length} images in ${elapsedTime} seconds`}</h1>
               <div className="flex flex-wrap justify-center gap-10">
                 {currentImages.map((response, index) => (
                   <div
@@ -313,7 +332,8 @@ const Form = () => {
 
         <button
           type="submit"
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-full"
+          disabled={loading || !image || !imagedataset}
+          className={`disabled:opacity-70 disabled:cursor-not-allowed mx-2 px-4 mt-10 py-2 rounded-full border-[2px] border-[#757376] bg-[#FEFBD6] text-[#005B4A] transition-all duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg`}
         >
           Search!
         </button>
@@ -321,5 +341,4 @@ const Form = () => {
     </div>
   );
 };
-
 export default Form;

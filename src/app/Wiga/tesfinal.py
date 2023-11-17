@@ -3,10 +3,12 @@ import numpy as np
 from pathlib import Path
 import time
 import os
+from multiprocessing import Pool
 
 def get_img_path(file_name):
     current_path = Path().absolute()
-    return str(current_path) + "\\public\\" + "\\Image\\" + file_name
+    return os.path.join(str(current_path), "public", "Image", file_name)
+
 
 def read_img(file_name):
     return cv2.imread(get_img_path(file_name))
@@ -124,19 +126,22 @@ def check_similarity(img, imgs):
     sorted_res = res[res[:, 1].argsort()[::-1]]  # Sort results by similarity score
     return sorted_res
 
-def main():
-    file_name = input("Enter the file name (including file type, e.g., Opan.png): \n")
-    start_time = time.time()
+# def main():
+#     file_name = input("Enter the file name (including file type, e.g., Opan.png): \n")
+#     start_time = time.time()
 
-    dataset_path = get_dataset_path()
-    imgs, img_paths = read_dataset(dataset_path)
-    img = read_img(file_name)
-    result = check_similarity(img, imgs)
+#     dataset_path = get_dataset_path()
+#     imgs, img_paths = read_dataset(dataset_path)
+#     img = read_img(file_name)
 
-    print(result)
+#     with Pool() as p:
+#         results = p.starmap(check_similarity, [(i, img, imgs) for i in range(len(imgs))])
 
-    end_time = time.time()
-    print("Execution time: {:.2f} seconds".format(end_time - start_time))
+#     sorted_results = sorted(results, key=lambda x: x[1][0][1], reverse=True)
+#     print(sorted_results)
 
-if __name__ == "__main__":
-    main()
+#     end_time = time.time()
+#     print("Execution time: {:.2f} seconds".format(end_time - start_time))
+
+# if __name__ == "__main__":
+#     main()

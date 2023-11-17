@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Container from "./Components/Navbar/Container";
 import bgimg from "../public/images/bgimg.jpg";
 import Form from "./Components/form"; // Correct the import path
