@@ -1,17 +1,17 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
-import requests
 from os.path import relpath
-from bs4 import BeautifulSoup
 from werkzeug.utils import secure_filename
 from multiprocessing import Pool
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from urllib.parse import urlparse, urljoin
-from io import BytesIO
+# from reportlab.lib.pagesizes import letter
+# from reportlab.pdfgen import canvas
+# from urllib.parse import urlparse, urljoin
+# from io import BytesIO
 from app.Wiga.temp import read_img, get_dataset_path, read_dataset, parallel_check_similarity
-from app.Salsa.tesmultitexture import checkTextureSimilarity
+from app.Salsa.newmulti import checkTextureSimilarity
+import requests
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 CORS(app)  # Initialize CORS with default options
@@ -46,6 +46,31 @@ def update_current_seed(new_seed):
     seed_file_path = os.path.join(app.config['SEED_FOLDER'], 'seed.txt')
     with open(seed_file_path, 'w') as seed_file:
         seed_file.write(str(new_seed))
+
+
+
+def scrape_images_from_website(url, destination_dir):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    img_tags = soup.find_all('img')
+    image_paths = []
+
+    for img_tag in img_tags:
+        img_url = img_tag.get('src')
+        if img_url:
+            img_url = urljoin(url, img_url)
+            img_response = requests.get(img_url)
+
+            if img_response.ok:
+                filename = secure_filename(os.path.basename(urlparse(img_url).path))
+                path = os.path.join(destination_dir, filename)
+                with open(path, 'wb') as img_file:
+                    img_file.write(img_response.content)
+                image_paths.append(path)
+
+    return image_paths
+
 
 @app.route('/api/upload-image', methods=['POST'])
 def upload_image():
@@ -137,28 +162,6 @@ def process_image_similarity_texture():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-def scrape_images_from_website(url, destination_dir):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    img_tags = soup.find_all('img')
-    image_paths = []
-
-    for img_tag in img_tags:
-        img_url = img_tag.get('src')
-        if img_url:
-            img_url = urljoin(url, img_url)
-            img_response = requests.get(img_url)
-
-            if img_response.ok:
-                filename = secure_filename(os.path.basename(urlparse(img_url).path))
-                path = os.path.join(destination_dir, filename)
-                with open(path, 'wb') as img_file:
-                    img_file.write(img_response.content)
-                image_paths.append(path)
-
-    return image_paths
 
 @app.route('/api/scrape-website', methods=['POST'])
 def scrape_website():

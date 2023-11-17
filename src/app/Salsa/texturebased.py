@@ -4,81 +4,17 @@ import sys
 sys.path.insert(0, 'c:/Users/Salsabiila/Kuliah/Semester3/Algeo/Tubes-2/Algeo02-22053')
 from src.app.Wiga.util import *
 
-def grayscaleImg(img):
+def createTextureVect(img):
     img_grayscale = np.round(0.299 * img[:, :, 2] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 0]).astype(np.uint8)
-    
-    return img_grayscale
 
-def createGLCM0(img, distance=1):
-    rows, cols = img.shape
     glcm = np.zeros((256, 256), dtype=int)
-
-    for i in range(rows):
-        for j in range(cols - distance):
-            glcm[img[i, j], img[i, j + distance]] += 1
-    
-    return glcm
-
-def createGLCM90(img):
-    rows, cols = img.shape
-    glcm = np.zeros((256, 256), dtype=int)
-
-    for j in range(cols):
-        for i in range(rows - 1, 0, -1):
-            glcm[img[i, j], img[i-1, j]] += 1
-    
-    return glcm
-
-def createGLCM45(img):
-    rows, cols = img.shape
-    glcm = np.zeros((256, 256), dtype=int)
-
-    for i in range(1, rows):
-        tempi = i
-        j = 0
-        while tempi > 0 and j < cols - 1:
-            glcm[img[tempi, j], img[tempi-1, j+1]] += 1
-            tempi -= 1
-            j += 1
-
-    for j in range(1, cols - 1):
-        tempj = j
-        i = rows - 1
-        while tempj < cols - 1 and i > 0:
-            glcm[img[i, tempj], img[i-1, tempj+1]] += 1
-            i -= 1
-            tempj += 1
-    
-    return glcm
-
-def createGLCM135(img):
-    rows, cols = img.shape
-    glcm = np.zeros((256, 256), dtype=int)
-
-    for i in range(1, rows):
-        tempi = i
-        j = cols - 1
-        while tempi > 0 and j > 0:
-            glcm[img[tempi, j], img[tempi-1, j-1]] += 1
-            tempi -= 1
-            j -= 1
-
-    for j in range(cols - 2, 0, -1):
-        tempj = j
-        i = rows - 1
-        while tempj > 0 and i > 0:
-            glcm[img[i, tempj], img[i-1, tempj-1]] += 1
-            i -= 1
-            tempj -= 1
-    
-    return glcm
-
-def normalizedSymmetricGLCM(glcm):
+    glcm[img_grayscale[1:, :], img_grayscale[:-1, :]] += 1
     normalized_glcm = np.transpose(glcm)
     normalized_glcm = np.add(glcm, normalized_glcm)
-
     elmt_sum = np.sum(normalized_glcm)
-    return normalized_glcm/elmt_sum
+    normalized_glcm = normalized_glcm / elmt_sum
+    vector = np.array([contrast(normalized_glcm), homogeneity(normalized_glcm), entropy(normalized_glcm), energy(normalized_glcm), correlation(normalized_glcm), dissimilarity(normalized_glcm)])
+    return vector
 
 def energy(glcm):
     return np.sqrt(np.sum(np.square(glcm)))
@@ -116,19 +52,13 @@ def correlation(glcm):
     
     return np.sum(glcm * correlation_matrix)
 
-def textureBasedVector(glcm):
-    vector = np.array([contrast(glcm), homogeneity(glcm), entropy(glcm), energy(glcm), correlation(glcm), dissimilarity(glcm)])
-    
-    return vector
-
-def checkTextureSimilarity(img, imgs, imgpath):
+def checkTextureSimilarity(img, imgs):
     res = []
-    glcm = normalizedSymmetricGLCM(createGLCM0(grayscaleImg(img)))
+    textureVector = createTextureVect(img)
 
     for i in range(len(imgs)):
-        glcmi = normalizedSymmetricGLCM(createGLCM0(grayscaleImg(imgs[i])))
-        cs = cosineSimilarity(glcm , glcmi)
-        print(cs)
+        textureVectori = createTextureVect(imgs[i])
+        cs = cosineSimilarity(textureVector , textureVectori)
         resi = (imgpath[i], cs)
         if cs > 60:
             res.append(resi)
