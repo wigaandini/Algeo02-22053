@@ -1,5 +1,8 @@
 import numpy as np
 import numpy.ma as ma
+import sys
+sys.path.insert(0, 'c:/Users/Salsabiila/Kuliah/Semester3/Algeo/Tubes-2/Algeo02-22053')
+from src.app.Wiga.util import *
 
 def grayscaleImg(img):
     img_grayscale = np.round(0.299 * img[:, :, 2] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 0]).astype(np.uint8)
@@ -117,3 +120,17 @@ def textureBasedVector(glcm):
     vector = np.array([contrast(glcm), homogeneity(glcm), entropy(glcm), energy(glcm), correlation(glcm), dissimilarity(glcm)])
     
     return vector
+
+def checkTextureSimilarity(img, imgs, imgpath):
+    res = []
+    glcm = normalizedSymmetricGLCM(createGLCM0(grayscaleImg(img)))
+
+    for i in range(100):
+        glcmi = normalizedSymmetricGLCM(createGLCM0(grayscaleImg(imgs[i])))
+        cs = cosineSimilarity(glcm , glcmi)
+        print(cs)
+        resi = (imgpath[i], cs)
+        if cs > 60:
+            res.append(resi)
+    sorted_res = sorted(res, key=lambda x: x[1], reverse=True)
+    return sorted_res
