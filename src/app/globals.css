@@ -1,3 +1,5 @@
+/* global.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -72,6 +74,14 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "BaksoSapi", sans-serif; /* Use the specified font-family */
   }
 }
 
+@font-face {
+  font-family: "BaksoSapi";
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  src: url("../public/fonts/BaksoSapi.otf") format("opentype");
+}

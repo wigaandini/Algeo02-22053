@@ -29,12 +29,9 @@ const Form = () => {
     }
   };
 
-  const handleToggle = () => {
-    if (method === "Color") {
-      setMethod("Texture");
-    } else {
-      setMethod("Color");
-    }
+  const handleToggleCheckbox = () => {
+    setMethod((prevMethod) => (prevMethod === "Color" ? "Texture" : "Color"));
+    
   };
 
   const handleFolderClick = () => {
@@ -66,7 +63,7 @@ const Form = () => {
       }
     }
   };
-
+  
   const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
 
@@ -262,6 +259,49 @@ const Form = () => {
               {`${imagedataset ? "Change Your Dataset?" : "Upload Folder"}`}
             </button>
           </div>
+        </div>
+
+        <div className="my-4 ">
+          <center>
+            <div className="items-center">
+              <label className="inline-flex items-center ml-3 relative">
+                <span
+                  className={`text-[#005B4A] font-bakso mr-3 ${
+                    method === "Color" ? "text-[#005B4A]" : "text-gray-400"
+                  }`}
+                >
+                  Color
+                </span>
+                <input
+                  type="checkbox"
+                  onChange={handleToggleCheckbox}
+                  checked={method === "Texture"}
+                  className="hidden"
+                />
+                <div
+                  className={`toggle-switch w-[48px] h-[24px] rounded-full ${
+                    method === "Color" ? "bg-[#005B4A]" : "bg-gray-400"
+                  }`}
+                >
+                  <div
+                    className={`toggle-switch-handle  -ml-6 w-6 h-6 rounded-full transform transition-transform duration-300 ease-in-out ${
+                      method === "Texture"
+                        ? "bg-white translate-x-full"
+                        : "bg-gray-200 translate-x-0"
+                    }`}
+                  ></div>
+                </div>
+
+                <span
+                  className={`ml-3 text-[#005B4A] font-bakso ${
+                    method === "Texture" ? "text-[#005B4A]" : "text-gray-400"
+                  }`}
+                >
+                  Texture
+                </span>
+              </label>
+            </div>
+          </center>
         </div>
 
         {loading ? (

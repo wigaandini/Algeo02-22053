@@ -40,6 +40,7 @@ def cosine_similarity(vector_img1, vector_img2):
                 (vector_length(vector_img1) * vector_length(vector_img2))) * 100
     else:
         return 0
+from util import *
 
 def get_hsv(img):
     imgnorm = img / 255.0
@@ -130,18 +131,17 @@ def check_similarity(img, imgs):
 #     file_name = input("Enter the file name (including file type, e.g., Opan.png): \n")
 #     start_time = time.time()
 
-#     dataset_path = get_dataset_path()
-#     imgs, img_paths = read_dataset(dataset_path)
-#     img = read_img(file_name)
+    dataset_path = get_dataset_path()
+    imgs, img_paths = read_dataset(dataset_path)
+    img = read_img(file_name)
+    result = check_similarity(img, imgs)
+    h, s, v = get_hsv(imgs)
+    write_csv(hsv_histogram(h,s,v), img_paths)
 
-#     with Pool() as p:
-#         results = p.starmap(check_similarity, [(i, img, imgs) for i in range(len(imgs))])
+    print(result)
 
-#     sorted_results = sorted(results, key=lambda x: x[1][0][1], reverse=True)
-#     print(sorted_results)
-
-#     end_time = time.time()
-#     print("Execution time: {:.2f} seconds".format(end_time - start_time))
+    end_time = time.time()
+    print("Execution time: {:.2f} seconds".format(end_time - start_time))
 
 # if __name__ == "__main__":
 #     main()

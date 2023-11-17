@@ -174,7 +174,7 @@ const FormCamera = () => {
 
   return (
     <div
-      className="py-10 mt-5  rounded-lg w-[85%] justify-center"
+      className="py-10 mt-5 rounded-lg w-[85%] justify-center"
       style={{
         background: backgroundColor,
         paddingLeft: "20px",
@@ -188,20 +188,28 @@ const FormCamera = () => {
               image ? "Captured Image : " : "Capture Your Image!"
             }`}</label>
             <div className="relative object-contain w-[160px] md:w-[240px] lg:w-[320px] xl:w-[480px] h-[90px] md:h-[135px] lg:h-[180px] xl:h-[270px] mb-4">
-              <Webcam
-                id="video"
-                audio={false}
-                ref={webcamRef}
-                width="100%"
-                height="100%"
-                screenshotFormat="image/jpeg"
-              />
+              {imagedataset ? (
+                <Webcam
+                  id="video"
+                  audio={false}
+                  ref={webcamRef}
+                  width="100%"
+                  height="100%"
+                  screenshotFormat="image/jpeg"
+                />
+              ) : (
+                <div>
+                  {/* Display a message or alternative content */}
+                  <h1>Upload a folder to activate the camera.</h1>
+                </div>
+              )}
               <canvas id="canvas" style={{ display: "none" }} />
+              {imagedataset?(
               <Image
                 alt="Captured Image"
                 src={image ? URL.createObjectURL(image) : placeholder}
                 fill
-              />
+              />):(null)}
             </div>
           </div>
           <div>
