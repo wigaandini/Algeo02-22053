@@ -78,6 +78,7 @@ def checkColorSimilarity(img, imgs, imgpath):
     res = []
     h, s, v = getHSV(img)
     hsv = HSVHistogram(h,s,v)
+    print("Type histo : " , type(hsv))
     for i in range(len(imgs)):
         hi, si, vi = getHSV(imgs[i])
         hsvi = HSVHistogram(hi,si,vi)
