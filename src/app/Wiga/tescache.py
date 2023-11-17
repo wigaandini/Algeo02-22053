@@ -143,14 +143,7 @@ def hsv_histogram(img):
 
     return frequency_vector.tolist()
 
-def write_csv(imgs, imgpath):
-    fields = ['img_path', 'img_vector']
-    filename = "cache.csv"
-    with open(filename, 'w') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(fields)
-        for i in range(len(imgs)):
-            csvwriter.writerow([imgpath[i], imgs[i]])
+
 
 def parallel_hsv_histogram(args):
     img_i, = args
@@ -158,15 +151,31 @@ def parallel_hsv_histogram(args):
 
 def parallel_check_similarity(img, imgs):
     vector1 = hsv_histogram(img)
-    with multiprocessing.Pool() as pool:
-        vector2_list = pool.map(parallel_hsv_histogram, [(img_i,) for img_i in imgs])
+    cached_file_path = "vector2_list_cache.csv"
 
-    res = np.empty((0, 2)) 
+    if os.path.exists(cached_file_path):
+        with open(cached_file_path, 'r') as csvfile:
+            reader = csv.reader(csvfile)
+            header = next(reader)  # Skip the header
+            vector2_list = [list(map(float, row)) for row in reader]
+    else:
+        with multiprocessing.Pool() as pool:
+            vector2_list = pool.map(parallel_hsv_histogram, [(img_i,) for img_i in imgs])
 
+        # Write vector2_list to cache
+        with open(cached_file_path, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['img_vector'])
+            writer.writerows(vector2_list)
+
+    res = np.empty((0, 2))
+    
     for i, vector2 in enumerate(vector2_list):
         cs = cosine_similarity(vector1, vector2)
         if cs > 60:
-              res = np.vstack((res, np.array([i, cs])))
+            res = np.vstack((res, np.array([i, cs])))
 
     sorted_res = res[res[:, 1].argsort()[::-1]]  # Sort results by similarity score
     return sorted_res
+
+

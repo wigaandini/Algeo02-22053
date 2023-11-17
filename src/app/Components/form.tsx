@@ -3,11 +3,14 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import placeholder from "../../public/images/placeholder.jpg";
 import Card from "../card";
-
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 interface response {
   similarity_score: number;
   image_path: string;
 }
+
+import { useMemo } from "react";
 
 const Form = () => {
   const [image, setImage] = useState<File | null>(null);
@@ -17,7 +20,6 @@ const Form = () => {
   const [result, setResult] = useState<response[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0); // Add state for elapsed time
-
   const inputRef = useRef<HTMLInputElement>(null);
   const inputRefFolder = useRef<HTMLInputElement>(null);
   const [backgroundColor, setBackgroundColor] = useState<string>(
@@ -28,10 +30,19 @@ const Form = () => {
       inputRef.current.click();
     }
   };
+  const imageSrc = useMemo(() => {
+    return image ? URL.createObjectURL(image) : placeholder;
+  }, [image, placeholder]);
+
+  const imagedatasetSrc = useMemo(() => {
+    // Check if imagedataset is an array and it has at least one element
+    return imagedataset && imagedataset.length > 0
+      ? URL.createObjectURL(imagedataset[0])
+      : placeholder;
+  }, [imagedataset, placeholder]);
 
   const handleToggleCheckbox = () => {
     setMethod((prevMethod) => (prevMethod === "Color" ? "Texture" : "Color"));
-    
   };
 
   const handleFolderClick = () => {
@@ -63,7 +74,7 @@ const Form = () => {
       }
     }
   };
-  
+
   const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
 
@@ -124,6 +135,7 @@ const Form = () => {
   };
 
   const onSubmit = async (e: React.FormEvent) => {
+    setElapsedTime(0);
     e.preventDefault();
     setLoading(true);
     setStartTime(new Date().getTime()); // Set the start time
@@ -158,6 +170,61 @@ const Form = () => {
       setResult(null);
       setStartTime(null);
     }
+  };
+
+  const saveResultsToPDF = async () => {
+    const doc = new jsPDF();
+    // Extract data from the result array
+    const data = result?.map(({ image_path, similarity_score }) => ({
+      image_path,
+      similarity_score,
+    }));
+
+    // Set the table header
+    doc.text("Image Similarity Results", 14, 10);
+
+    if (data) {
+      // Add rows to the table
+      for (let index = 0; index < data.length; index++) {
+        const { image_path, similarity_score } = data[index];
+        const startY = index === 0 ? 20 : doc.previousAutoTable.finalY + 10;
+
+        doc.text(`Image ${index + 1}:`, 14, startY);
+        doc.text(
+          `Similarity Score: ${similarity_score.toFixed(2)}`,
+          14,
+          startY + 10
+        );
+
+        // Load the image and add it to the PDF
+        const imgData = await loadImageData(image_path);
+        doc.addImage(imgData, "JPEG", 80, startY, 40, 40);
+
+        // Add a new page for each image (optional)
+        if (index < data.length - 1) {
+          doc.addPage();
+        }
+      }
+    }
+
+    // Save the PDF with a specific name
+    doc.save("results.pdf");
+  };
+
+  // Helper function to convert image path to image data
+  const loadImageData = (imagePath: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/jpeg"));
+      };
+      img.src = imagePath;
+    });
   };
 
   useEffect(() => {
@@ -196,15 +263,11 @@ const Form = () => {
       <form onSubmit={onSubmit} className="formbg">
         <div className="grid grid-cols-2 gap-4 ">
           <div>
-            <label className="block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{` ${
+            <label className="font-bakso block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{` ${
               image ? "Uploaded Image : " : "Upload Your Image!"
             }`}</label>
             <div className="relative object-contain w-[160px] md:w-[240px] lg:w-[320px] xl:w-[480px] h-[90px] md:h-[135px] lg:h-[180px] xl:h-[270px] mb-4">
-              <Image
-                alt="Uploaded Image"
-                src={image ? URL.createObjectURL(image) : placeholder}
-                fill
-              />
+              <Image alt="Uploaded Image" src={imageSrc} fill />
             </div>
             <input
               type="file"
@@ -218,27 +281,19 @@ const Form = () => {
             <button
               type="button"
               onClick={handlePhotoClick}
-              className="border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
+              className="font-bakso border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
             >
               {image ? "Change Your Photo ?" : "Upload Photo"}
             </button>
           </div>
           <div>
-            <label className="block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{`${
+            <label className="font-bakso block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{`${
               imagedataset
                 ? `Dataset : ${imagedataset.length} images `
                 : "Upload Your Dataset!"
             }`}</label>
             <div className="relative object-contain w-[160px] md:w-[240px] lg:w-[320px] xl:w-[480px] h-[90px] md:h-[135px] lg:h-[180px] xl:h-[270px] mb-4">
-              <Image
-                alt="Uploaded Image"
-                src={
-                  imagedataset
-                    ? URL.createObjectURL(imagedataset[0])
-                    : placeholder
-                }
-                fill
-              />
+              <Image alt="Uploaded Image" src={imagedatasetSrc} fill />
             </div>
             <input
               type="file"
@@ -254,7 +309,7 @@ const Form = () => {
             <button
               type="button"
               onClick={handleFolderClick}
-              className="border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
+              className="font-bakso border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
             >
               {`${imagedataset ? "Change Your Dataset?" : "Upload Folder"}`}
             </button>
@@ -316,7 +371,18 @@ const Form = () => {
           currentImages.length > 0 ? (
             <div>
               <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl py-10">{`${result?.length} images in ${elapsedTime} seconds`}</h1>
-              <div className="flex flex-wrap justify-center gap-10">
+              <button
+                className={`disabled:opacity-70 disabled:cursor-not-allowed mx-2 px-4 mt-10 py-2 rounded-full border-[2px] border-[#757376] bg-[#FEFBD6] text-[#005B4A] transition-all duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg`}
+                disabled={!currentImages}
+                onClick={saveResultsToPDF}
+                type="button"
+              >
+                Save Your Results?
+              </button>
+              <div
+                id="results-container"
+                className="flex flex-wrap justify-center gap-10"
+              >
                 {currentImages.map((response, index) => (
                   <div
                     key={index}

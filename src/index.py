@@ -4,7 +4,10 @@ import os
 from os.path import relpath
 from werkzeug.utils import secure_filename
 from multiprocessing import Pool
-from app.Wiga.tesmulti import read_img, get_dataset_path, read_dataset, parallel_check_similarity
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from io import BytesIO
+from app.Wiga.temp import read_img, get_dataset_path, read_dataset, parallel_check_similarity
 
 
 app = Flask(__name__)
@@ -90,6 +93,9 @@ def upload_folder():
         path = os.path.join(destination_dir, filename)
         image.save(path)
         paths.append(path)
+    cached_file_path = "vector2_list_cache.csv"
+    if os.path.exists(cached_file_path):
+        os.remove(cached_file_path)
 
     return jsonify({'message': 'Folder uploaded successfully', 'paths': paths})
 
@@ -107,7 +113,6 @@ def process_image_similarity():
         imgs, img_paths = read_dataset(dataset_path)
         result = parallel_check_similarity(img, imgs)
 
-        # Construct a list of dictionaries containing image paths and similarity scores
         similarity_results = [{'image_path': relpath(img_paths[int(index)], app.config['UPLOAD_FOLDER']), 'similarity_score': float(score)} for index, score in result]
 
         return jsonify({'similarity_results': similarity_results}), 200
