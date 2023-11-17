@@ -143,8 +143,6 @@ def hsv_histogram(img):
 
     return frequency_vector.tolist()
 
-
-
 def parallel_hsv_histogram(args):
     img_i, = args
     return hsv_histogram(img_i)

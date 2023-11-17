@@ -123,11 +123,12 @@ def textureBasedVector(glcm):
 
 def checkTextureSimilarity(img, imgs, imgpath):
     res = []
-    textureVector = textureBasedVector(normalizedSymmetricGLCM(createGLCM0(grayscaleImg(img))))
+    glcm = normalizedSymmetricGLCM(createGLCM0(grayscaleImg(img)))
 
     for i in range(len(imgs)):
-        textureVectori = textureBasedVector(normalizedSymmetricGLCM(createGLCM0(grayscaleImg(imgs[i]))))
-        cs = cosineSimilarity(textureVector , textureVectori)
+        glcmi = normalizedSymmetricGLCM(createGLCM0(grayscaleImg(imgs[i])))
+        cs = cosineSimilarity(glcm , glcmi)
+        print(cs)
         resi = (imgpath[i], cs)
         if cs > 60:
             res.append(resi)
