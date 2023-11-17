@@ -89,24 +89,22 @@ def checkColorSimilarity(img, imgs, imgpath):
     sorted_res = sorted(res, key=lambda x: x[1], reverse=True)
     return sorted_res
 
-folder = input("Nama folder dataset: ")
-# print(imgs)
 
-file1 = input("Masukkan nama file 1 (lengkap dengan type file, e.g : Opan.png): \n")
-# file2 = input("Masukkan nama file 2 (lengkap dengan type file, e.g : Opan.png): \n")
-# # # img1c = cropInto16Blocks(cropImage(img1))
-# # # hsv1 = calculate16HSV(img1c)
-# # # print(len(hsv1))
+
+folder = input("Nama folder dataset: ")
+
+file = input("Masukkan nama file (lengkap dengan type file, e.g : Opan.png): \n")
 
 start = time.time()
 dataset_path = getDatasetPath(folder)
 imgs, imgpath = readDataset(dataset_path)
-# print(len(imgs))
-img1 = readImg(file1)
-res = checkColorSimilarity(img1, imgs, imgpath)
-# print(imgpath)
-# print()
+
+img = readImg(file)
+res = checkColorSimilarity(img, imgs, imgpath)
 print(res)
+end = time.time()
+print("The time of execution of above program is :",
+      (end-start), "s")
 # img1 = cv2.imread(getImgPath(file1))
 # img2 = cv2.imread(getImgPath(file2))
 # # # img2c = cropInto16Blocks(cropImage(img2))
@@ -124,12 +122,9 @@ print(res)
 # # print()
 # print(cosineSimilarity(hsv1, hsv2) * 100)
 # # print()
-end = time.time()
  
 # # print the difference between start 
 # # and end time in milli. secs
-print("The time of execution of above program is :",
-      (end-start), "s")
 
 # print(cosineSimilarity(hsv1[0], hsv2[0]))
 # print(cosineSimilarity(hsv1[1], hsv2[1]))
