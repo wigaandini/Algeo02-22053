@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import Webcam from "react-webcam";
-import placeholder from "../../public/images/placeholder.jpg";
+
 
 const CameraCapture = ({ setImage, setImagestring }) => {
-  const webcamRef = useRef(null);
+  
   const [isCapturing, setIsCapturing] = useState(true);
   const handleToggleCapture = () => {
     setIsCapturing((prevIsCapturing) => !prevIsCapturing);

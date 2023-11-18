@@ -100,7 +100,7 @@ const HowToUsePage = () => {
         <center>
           <Container>
             <div className="rounded-full">
-              <h1 className="text-6xl font-bold text-black py-5">
+              <h1 className="font-lemon text-6xl font-bold text-black py-5">
                 Cara Menggunakan
               </h1>
             </div>
@@ -118,7 +118,7 @@ const HowToUsePage = () => {
         <center>
           <Container>
             <div className="rounded-full">
-              <h1 className="text-6xl font-bold text-black py-5">How to Use</h1>
+              <h1 className="font-lemon text-6xl font-bold text-black py-5">How to Use</h1>
             </div>
           </Container>
         </center>

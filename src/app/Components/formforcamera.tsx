@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import placeholder from "../../public/images/placeholder.jpg";
 import Card from "../card";
-
+import Webcam from "react-webcam";
 import CameraCapture from "./cameracapture";
 
 interface response {
@@ -31,6 +31,7 @@ const Form = () => {
   const [showBackdrop, setShowBackdrop] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const inputRefFolder = useRef<HTMLInputElement>(null);
+  const webcamRef = useRef(null);
 
   const imageSrc = useMemo(() => {
     return image ? URL.createObjectURL(image) : placeholder;
@@ -137,6 +138,54 @@ const Form = () => {
     setIsScraping(false);
     setWebsiteUrl(""); // Reset the entered URL
   };
+
+  const handleCameraCapture = async () => {
+    const webcam = webcamRef.current;
+    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    const context = canvas.getContext("2d");
+
+    if (webcam && canvas && context) {
+      const video = webcam.video as HTMLVideoElement;
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          setImage(new File([blob], "image.jpg"));
+        }
+      }, "image/jpeg");
+
+      // Upload the captured image to the server
+      const formData = new FormData();
+      formData.append("image", image);
+
+      try {
+        const res = await fetch("http://localhost:5000/api/upload-image", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          console.log("Error uploading image");
+        } else {
+          setImagestring(data.image_path);
+        }
+      } catch (error) {
+        console.error("Error uploading image:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const captureInterval = setInterval(() => {
+      handleCameraCapture();
+    }, 20000);
+
+    return () => {
+      clearInterval(captureInterval);
+    };
+  }, []); // Run only once on component mount
 
   const handleSubmitScraping = async () => {
     setShowBackdrop(true);
@@ -352,10 +401,19 @@ const Form = () => {
               <div className="relative object-contain w-[160px] md:w-[240px] lg:w-[320px] xl:w-[480px] h-[90px] md:h-[135px] lg:h-[180px] xl:h-[270px] mb-4">
                 <Image alt="Camera Capture" src={imageSrc} fill />
               </div>
-              <CameraCapture
-                setImage={setImage}
-                setImagestring={setImagestring}
-              />
+              <div>
+                <Webcam
+                  audio={false}
+                  ref={webcamRef}
+                  screenshotFormat="image/jpeg"
+                  videoConstraints={{
+                    width: 1280,
+                    height: 720,
+                    facingMode: "user",
+                  }}
+                />
+                <canvas id="canvas" style={{ display: "none" }} />
+              </div>
             </div>
 
             <label className="font-bakso block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{`${

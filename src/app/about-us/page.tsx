@@ -17,28 +17,28 @@ const AboutUs = () => {
       name: "Erdianti Wiga Putri Andini",
       photo: wiga.src,
       nim: "13522053",
-      kesanPesan: "Fak kata gw teh",
+      kesanPesan: "Depresi dikit",
       deskripsi:
-        "Mba mba dari malang yang suka ama orang dari nangor kita sebut saja inisialnya W (for white) dan suka marah-marah.",
+        "Wigglo as melody",
       logo: logowiga.src,
     },
     {
       name: "Imanuel Sebastian Girsang",
       photo: nuel.src,
       nim: "13522058",
-      kesanPesan: "Kalo kata wiga tubes ini EZ banget",
+      kesanPesan: "Depresi Banyak (gabungan wiga salsa)",
       logo: logonuel.src,
       deskripsi:
-        "Ga ada deskripsi, hehehhee",
+        "Sebby as pochacho",
     },
     {
       name: "Salsabiila",
       photo: salsa.src,
       nim: "13522062",
-      kesanPesan: "Ditunggu Tahun Depan Lebih Susah lagi Tubesnya, terlalu ez kalo buat level pembuat soal pengkom",
+      kesanPesan: "Trust issue banyak",
       logo: logosalsa.src,
       deskripsi:
-        "Pengcarry Handal Pengkom",
+        "Salslay as kuromi",
     },
   ];
 
@@ -61,7 +61,7 @@ const AboutUs = () => {
       </div>
       <center>
         <Container>
-          <div className="font-bakso relative z-1 text-8xl mt-10">Know</div>
+          <div className="font-lemon relative z-1 text-8xl mt-10">Know</div>
           <div className="relative z-1 pt-8 text-center flex flex-row items-baseline justify-center gap-5">
             <div className="font-bakso text-5xl">The People</div>
             <div className="relative z-1 text-center font-bakso text-5xl pt-10">

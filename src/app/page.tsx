@@ -27,8 +27,8 @@ export default function Home() {
             <Image
               src={opening}
               alt="opening"
-              width={1400}
-              height={1400}
+              width={1320}
+              height={1320}
               className="rounded-3xl border-2 border-[#757376]"
             />
           </div>
