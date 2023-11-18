@@ -59,7 +59,7 @@ const Search = () => {
           </div>
           <div
             onClick={() => {
-              router.push(`/about-prject`);
+              router.push(`/about-project`);
             }}
             className="
                 hidden

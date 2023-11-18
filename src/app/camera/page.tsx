@@ -22,13 +22,10 @@ export default function Camera() {
       </div>
       <center>
         <Container>
-          <div className="font-sans relative z-1 text-8xl mt-10">Reverse</div>
-          <div className="relative z-1 pt-8 text-center flex flex-row items-baseline justify-center gap-5">
-            <div className="font-sans text-5xl">Image</div>
-            <div className="relative z-1 text-center font-sans text-5xl pt-10">
-              Search
-            </div>
+          <div className="font-lemon relative z-1 text-6xl mt-10">
+            Try Out Our Camera !
           </div>
+          
           <Form />
         </Container>
       </center>
