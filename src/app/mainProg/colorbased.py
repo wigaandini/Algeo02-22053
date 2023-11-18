@@ -2,6 +2,7 @@ import numpy as np
 import os
 import multiprocessing
 import csv
+from app.mainProg.util import *
 
 def hsv_histogram(img):
     imgnorm = img / 255.0 # normalisasi rgb 0-255 ke 0-1
@@ -73,7 +74,7 @@ def parallel_check_similarity(img, imgs):
     res = np.empty((0, 2))
     for i, vector2 in enumerate(vector2_list):
         cs = cosine_similarity(vector1,vector2)
-        if cs > 60:  # You can adjust the threshold as needed
+        if cs > 60:
             res = np.vstack((res, np.array([i, cs])))
 
     sorted_res = res[res[:, 1].argsort()[::-1]]
