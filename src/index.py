@@ -5,8 +5,9 @@ from os.path import relpath
 from werkzeug.utils import secure_filename
 from multiprocessing import Pool
 from urllib.parse import urlparse, urljoin
-from app.Wiga.temp import read_img, get_dataset_path, read_dataset, parallel_check_similarity
-from app.Salsa.newmulti import checkTextureSimilarity
+from app.mainProg.colorbased import parallel_check_similarity
+from app.mainProg.texturebased import checkTextureSimilarity
+from app.mainProg.util import *
 import requests
 from bs4 import BeautifulSoup
 from reportlab.lib.pagesizes import letter
