@@ -7,8 +7,13 @@ from app.mainProg.util import *
 def createTextureVect(img):
     img_grayscale = np.round(0.299 * img[:, :, 2] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 0]).astype(np.uint8)
 
+    rows, cols = img_grayscale.shape
     glcm = np.zeros((256, 256), dtype=int)
-    glcm[img_grayscale[1:, :], img_grayscale[:-1, :]] += 1
+
+    for j in range(cols):
+        for i in range(rows - 1, 0, -1):
+            glcm[img_grayscale[i, j], img_grayscale[i-1, j]] += 1
+
     normalized_glcm = np.transpose(glcm)
     normalized_glcm = np.add(glcm, normalized_glcm)
     elmt_sum = np.sum(normalized_glcm)
