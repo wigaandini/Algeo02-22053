@@ -1,14 +1,11 @@
 import cv2
 import numpy as np
 from pathlib import Path
-import matplotlib.pyplot as plt
-import time
 import os
-import csv
 
 def get_img_path(file_name):
     current_path = Path().absolute()
-    return str(current_path) + "\\public\\" + "\\Image\\" + file_name
+    return os.path.join(str(current_path), "public", "Image", file_name)
 
 def read_img(file_name):
     return cv2.imread(get_img_path(file_name))
@@ -18,7 +15,7 @@ def get_dataset_path():
     return current_path / "public" / "Dataset"
 
 def read_dataset(data_path):
-    image_files = [f for f in os.listdir(data_path) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+    image_files = [f for f in os.listdir(data_path) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]  # cuma read yg file image aja
     img_paths = [os.path.join(data_path, file) for file in image_files]
     imgs = np.array([cv2.imread(img_path) for img_path in img_paths])
 
@@ -34,7 +31,8 @@ def vector_length(vector):
 def cosine_similarity(vector_img1, vector_img2):
     vector_img1 = np.array(vector_img1)
     vector_img2 = np.array(vector_img2)
-    if vector_length(vector_img1) != 0 and vector_length(vector_img2) != 0:
+
+    if vector_length(vector_img1) != 0 and vector_length(vector_img2) != 0:  # ngehindarin pembagian 0
         return (dot_product_vector(vector_img1, vector_img2) /
                 (vector_length(vector_img1) * vector_length(vector_img2))) * 100
     else:

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import logo from "./Sanrio_Smiles-logo-75753A8338-seeklogo.com.png"
+import logo from "./logo.png"
 const Logo = () => {
     const router = useRouter();
     return (

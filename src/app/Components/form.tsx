@@ -19,6 +19,7 @@ const Form = () => {
   const [method, setMethod] = useState<string>("Color");
   const [startTime, setStartTime] = useState<number | null>(null);
   const [result, setResult] = useState<response[] | null>(null);
+  const [imagestring, setImagestring] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [havescrapping, sethavescrapping] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0); // Add state for elapsed time
@@ -37,9 +38,10 @@ const Form = () => {
 
   const imagedatasetSrc = useMemo(() => {
     // Check if imagedataset is an array and it has at least one element
+
     return imagedataset && imagedataset.length > 0
       ? havescrapping
-        ? "../../" + imagedataset[0]
+        ? `/${imagedataset[0].replace(/\\/g, "/")}`
         : URL.createObjectURL(imagedataset[0])
       : placeholder;
   }, [imagedataset, placeholder]);
@@ -49,7 +51,7 @@ const Form = () => {
       inputRef.current.click();
     }
   };
-  imagedataset && console.log(imagedataset[0])
+  imagedataset && console.log(imagedataset[0]);
 
   const handleFolderClick = () => {
     if (inputRefFolder.current) {
@@ -72,14 +74,21 @@ const Form = () => {
           body: formData,
         });
 
+        const data = await res.json();
+
+
         if (!res.ok) {
           console.log("Error uploading image");
+        }else{
+          setImagestring(data.image_path);
+          
         }
       } catch (error) {
         console.error("Error uploading image:", error);
       }
     }
   };
+  
 
   const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
@@ -229,59 +238,37 @@ const Form = () => {
     }
   };
 
-  const saveResultsToPDF = async () => {
-    const doc = new jsPDF();
-    // Extract data from the result array
-    const data = result?.map(({ image_path, similarity_score }) => ({
-      image_path,
-      similarity_score,
-    }));
+  const sendAttachment = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/send-attachment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          similarity_results: result,
+          image_path: imagestring,
+        }),
+      });
+      
 
-    // Set the table header
-    doc.text("Image Similarity Results", 14, 10);
-
-    if (data) {
-      // Add rows to the table
-      for (let index = 0; index < data.length; index++) {
-        const { image_path, similarity_score } = data[index];
-        const startY = index === 0 ? 20 : doc.previousAutoTable.finalY + 10;
-
-        doc.text(`Image ${index + 1}:`, 14, startY);
-        doc.text(
-          `Similarity Score: ${similarity_score.toFixed(2)}`,
-          14,
-          startY + 10
-        );
-
-        // Load the image and add it to the PDF
-        const imgData = await loadImageData(image_path);
-        doc.addImage(imgData, "JPEG", 80, startY, 40, 40);
-
-        // Add a new page for each image (optional)
-        if (index < data.length - 1) {
-          doc.addPage();
-        }
+      if (res.ok) {
+        // If the response is successful, open the PDF in a new tab
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "results.pdf";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error("Error sending attachment:", res.statusText);
       }
+    } catch (error) {
+      console.error("Error sending attachment:", error);
     }
-
-    // Save the PDF with a specific name
-    doc.save("results.pdf");
-  };
-
-  // Helper function to convert image path to image data
-  const loadImageData = (imagePath: string): Promise<string> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx?.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL("image/jpeg"));
-      };
-      img.src = imagePath;
-    });
   };
 
   useEffect(() => {
@@ -318,7 +305,7 @@ const Form = () => {
 
   return (
     <div
-      className="py-10 mt-5  rounded-lg w-[85%] justify-center"
+      className="py-10 mt-5  rounded-lg w-[85%] justify-center border-2 border-[#757376]"
       style={{
         background: backgroundColor,
         paddingLeft: "20px",
@@ -490,15 +477,8 @@ const Form = () => {
           currentImages.length > 0 ? (
             <div>
               <hr className="my-6 border-t-2 border-[#757376]" />
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl py-10">{`${result?.length} images in ${elapsedTime} seconds`}</h1>
-              <button
-                className={`disabled:opacity-70 disabled:cursor-not-allowed mx-2 px-4 mt-10 py-2 rounded-full border-[2px] border-[#757376] bg-[#FEFBD6] text-[#005B4A] transition-all duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg`}
-                disabled={!currentImages}
-                onClick={saveResultsToPDF}
-                type="button"
-              >
-                Save Your Results?
-              </button>
+              <h1 className="font-bakso text-xl sm:text-2xl md:text-3xl lg:text-4xl py-10">{`${result?.length} images in ${elapsedTime} seconds`}</h1>
+
               <div
                 id="results-container"
                 className="flex flex-wrap justify-center gap-10"
@@ -550,12 +530,19 @@ const Form = () => {
                   End
                 </button>
               </div>
+              <button
+                className={`disabled:opacity-70 disabled:cursor-not-allowed mx-2 px-4 mt-10 py-2 rounded-full border-[2px] border-[#757376] bg-[#FEFBD6] text-[#005B4A] transition-all duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg`}
+                disabled={!currentImages}
+                onClick={sendAttachment}
+                type="button"
+              >
+                Save Your Results?
+              </button>
               <hr className="my-6 border-t-2 border-[#757376]" />
             </div>
           ) : (
             <h1>Tidak ada gambar yang mirip !</h1>
           )
-          
         ) : null}
 
         <button

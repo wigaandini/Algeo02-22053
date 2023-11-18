@@ -8,7 +8,7 @@ const Card: React.FC<CardProps> = ({ image, similarity }) => {
     <div className="card">
       <img src={image} className="card-image" alt="Uploaded Image" />
       <div className="card-overlay">
-        <p className="similarity-text">Similarity: {similarity.toFixed(2)} %</p>
+        <p className="similarity-text">Similarity: {similarity.toFixed(4)} %</p>
       </div>
 
       <style jsx>{`
