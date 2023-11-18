@@ -74,7 +74,7 @@ def hsv_histogram(h_val, s_val, v_val):
     return frequency_vector
 
 def check_similarity(img, imgs):
-    res = np.empty((0, 2))  # Initialize an empty NumPy array for results
+    res = np.empty((0, 2))
 
     h, s, v = get_hsv(img)
     hsv = hsv_histogram(h, s, v)
@@ -87,7 +87,7 @@ def check_similarity(img, imgs):
         if cs > 60:
             res = np.vstack((res, np.array([i, cs])))
 
-    sorted_res = res[res[:, 1].argsort()[::-1]]  # Sort results by similarity score
+    sorted_res = res[res[:, 1].argsort()[::-1]]
     return sorted_res
 
 def main():
