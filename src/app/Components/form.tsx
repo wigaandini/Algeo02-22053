@@ -3,8 +3,7 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import placeholder from "../../public/images/placeholder.jpg";
 import Card from "../card";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+
 
 interface response {
   similarity_score: number;
