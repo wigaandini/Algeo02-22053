@@ -74,14 +74,14 @@ const Search = () => {
                 text-center
                 transition-colors duration-200 ease-in-out hover:text-gray-600"
           >
-            About Project
+            ABOUT PROJECT
           </div>
           <div
             onClick={() => router.replace(`/camera`)}
             className="
                 text-sm font-semibold px-6 text-[#F49082] transition-colors duration-200 ease-in-out hover:text-gray-600"
           >
-            Camera
+            CAMERA
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import nextjs from "../../public/images/nextjs.png";
 import flask from "../../public/images/flask.png";
 import tailwind from "../../public/images/tailwind.png";
 import typescript from "../../public/images/ts.png";
+import python from "../../public/images/python.png";
 const AboutProject = () => {
   return (
     <>
@@ -33,15 +34,16 @@ const AboutProject = () => {
             </center>
             <div className="font-louis text-lg">
               <p className="mb-4">
-                Program Search Engine yang kami buat adalah aplikasi aljabar
-                vektor dalam sistem temu balik gambar. Dengan adanya sistem temu
-                balik gambar (image retrieval system), pengguna dapat dengan
-                mudah mencari, mengakses, dan mengelola koleksi gambar mereka.
-                Dalam konteks ini, aljabar vektor digunakan untuk menggambarkan
-                dan menganalisis data melalui pendekatan klasifikasi berbasis
-                konten (Content-Based Image Retrieval atau CBIR), di mana sistem
-                temu balik gambar bekerja dengan mengidentifikasi gambar
-                berdasarkan konten visual seperti warna dan tekstur.
+                Program Image Search Engine yang kami buat adalah aplikasi
+                aljabar vektor dalam sistem temu balik gambar. Dengan adanya
+                sistem temu balik gambar (image retrieval system), pengguna
+                dapat dengan mudah mencari, mengakses, dan mengelola koleksi
+                gambar mereka. Dalam konteks ini, aljabar vektor digunakan untuk
+                menggambarkan dan menganalisis data melalui pendekatan
+                klasifikasi berbasis konten (Content-Based Image Retrieval atau
+                CBIR), di mana sistem temu balik gambar bekerja dengan
+                mengidentifikasi gambar berdasarkan konten visual seperti warna
+                dan tekstur.
               </p>
 
               <p className="mb-4">
@@ -74,7 +76,7 @@ const AboutProject = () => {
                 untuk proyek ini.
               </p>
             </div>
-            <div className="grid grid-cols-4 gap-4 mt-8 items-center justify-center">
+            <div className="grid grid-cols-5 gap-4 mt-8 items-center justify-center">
               {/* Replace the paths and dimensions with your actual data */}
               <div className="w-full h-auto flex items-center justify-center">
                 <Image
@@ -102,6 +104,9 @@ const AboutProject = () => {
               </div>
               <div className="w-full h-auto flex items-center justify-center">
                 <Image src={flask} alt="Flask Logo" width={100} height={50} />
+              </div>
+              <div className="w-full h-auto flex items-center justify-center">
+                <Image src={python} alt="Python Logo" width={100} height={50} />
               </div>
             </div>
           </div>
