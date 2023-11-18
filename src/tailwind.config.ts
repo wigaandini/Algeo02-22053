@@ -19,7 +19,8 @@ module.exports = {
     extend: {
       fontFamily: {
         bakso: ["BaksoSapi", "sans-serif"],
-        oldenburg: ["Oldenburg", "sans-serif"],
+        louis: ["LouisGeorgeCafe", "sans-serif"],
+        lemon: ["LemonMilk, sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

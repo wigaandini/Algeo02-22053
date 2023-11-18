@@ -5,6 +5,8 @@ import multiprocessing
 import csv
 from app.Wiga.util import *
 
+
+
 def createTextureVect(img):
     img_grayscale = np.round(0.299 * img[:, :, 2] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 0]).astype(np.uint8)
 
@@ -79,7 +81,7 @@ def checkTextureSimilarity(img, imgs):
     res = np.empty((0, 2))
     for i, vector2 in enumerate(vector2_list):
         cs = cosine_similarity(textureVector,vector2)
-        if cs > 0.6:  # You can adjust the threshold as needed
+        if cs > 60:  # You can adjust the threshold as needed
             res = np.vstack((res, np.array([i, cs])))
 
     sorted_res = res[res[:, 1].argsort()[::-1]]

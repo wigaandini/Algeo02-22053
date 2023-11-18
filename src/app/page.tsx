@@ -1,7 +1,8 @@
 import Container from "./Components/Navbar/Container";
 import bgimg from "../public/images/bgimg.jpg";
 import Form from "./Components/form"; // Correct the import path
-
+import opening from "../public/images/bgimgg.png";
+import Image from "next/image";
 export default function Home() {
   return (
     <>
@@ -22,13 +23,16 @@ export default function Home() {
       </div>
       <center>
         <Container>
-          <div className="font-bakso relative z-1 text-8xl mt-10">Content Based</div>
-          <div className="relative z-1 pt-8 text-center flex flex-row items-baseline justify-center gap-5">
-            <div className="font-bakso text-5xl">Image</div>
-            <div className="relative z-1 text-center font-bakso text-5xl pt-10">
-              Retrieval
-            </div>
+          <div className="rounded-full">
+            <Image
+              src={opening}
+              alt="opening"
+              width={1400}
+              height={1400}
+              className="rounded-3xl border-2 border-[#757376]"
+            />
           </div>
+
           <Form />
         </Container>
       </center>

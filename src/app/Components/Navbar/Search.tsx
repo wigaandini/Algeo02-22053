@@ -51,11 +51,30 @@ const Search = () => {
             ABOUT US
           </div>
           <div
-            onClick={() => router.replace(`/howto`)}
+            onClick={() => router.replace(`/how-to-use`)}
             className="
                 text-sm font-semibold px-6 text-[#F49082] transition-colors duration-200 ease-in-out hover:text-gray-600"
           >
             HOW TO USE
+          </div>
+          <div
+            onClick={() => {
+              router.push(`/about-prject`);
+            }}
+            className="
+                hidden
+                sm:block
+                text-sm
+                text-[#F49082]
+                font-semibold
+                px-6
+                border-x-[2px]
+                border-[#757376]
+                flex-1
+                text-center
+                transition-colors duration-200 ease-in-out hover:text-gray-600"
+          >
+            About Project
           </div>
           <div
             onClick={() => router.replace(`/camera`)}

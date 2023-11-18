@@ -1,17 +1,18 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os
 from os.path import relpath
 from werkzeug.utils import secure_filename
 from multiprocessing import Pool
-# from reportlab.lib.pagesizes import letter
-# from reportlab.pdfgen import canvas
-# from urllib.parse import urlparse, urljoin
-# from io import BytesIO
+from urllib.parse import urlparse, urljoin
 from app.Wiga.temp import read_img, get_dataset_path, read_dataset, parallel_check_similarity
 from app.Salsa.newmulti import checkTextureSimilarity
 import requests
 from bs4 import BeautifulSoup
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from io import BytesIO
+from PIL import Image
 
 app = Flask(__name__)
 CORS(app)  # Initialize CORS with default options
@@ -47,8 +48,6 @@ def update_current_seed(new_seed):
     with open(seed_file_path, 'w') as seed_file:
         seed_file.write(str(new_seed))
 
-
-
 def scrape_images_from_website(url, destination_dir):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -67,10 +66,47 @@ def scrape_images_from_website(url, destination_dir):
                 path = os.path.join(destination_dir, filename)
                 with open(path, 'wb') as img_file:
                     img_file.write(img_response.content)
-                image_paths.append(path)
+                image_paths.append(relpath(path, app.config['UPLOAD_FOLDER']))
 
     return image_paths
 
+def create_pdf(similarity_results, img_path):
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+
+    images_per_page = 2
+    image_width = 200
+    image_height = 200
+    margin = 50
+    y_position = 500
+    x_positions = [100, 350, 600]  # Adjust as needed
+    img_path2 = os.path.join(app.config['UPLOAD_FOLDER'], img_path)
+    c.drawString(100, 400,f'Image Query: ')
+    c.drawImage(img_path2, 300, 300, width=200, height=200)
+    c.showPage()
+
+    for i, result in enumerate(similarity_results, 1):
+        if i % images_per_page == 1 and i != 1:
+            # Move to the next page
+            c.showPage()
+            y_position = 500
+
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], result['image_path'])
+        similarity_score = "{:.2f} %".format(result['similarity_score'])  # Format to two decimal places
+
+        # Draw the image
+        x_position = x_positions[0]
+        c.drawImage(image_path, x_position, y_position, width=image_width, height=image_height)
+
+        # Draw the similarity score next to the image
+        c.drawString(x_position + image_width + margin, y_position + image_height / 2, f'Similarity Score: {similarity_score}')
+
+        # Update y_position for the next row
+        y_position -= image_height + margin
+
+    c.save()
+    buffer.seek(0)
+    return buffer.read()
 
 @app.route('/api/upload-image', methods=['POST'])
 def upload_image():
@@ -90,7 +126,7 @@ def upload_image():
     path = os.path.join(destination_dir, filename)
     image.save(path)
 
-    return jsonify({'message': 'Image uploaded successfully', 'path': path})
+    return jsonify({'message': 'Image uploaded successfully', 'image_path': relpath(path, app.config['UPLOAD_FOLDER'])})
 
 @app.route('/api/upload-folder', methods=['POST'])
 def upload_folder():
@@ -126,7 +162,7 @@ def upload_folder():
     if os.path.exists(cached_file_path2):
         os.remove(cached_file_path2)
 
-    return jsonify({'message': 'Folder uploaded successfully', 'paths': paths})
+    return jsonify({'message': 'Folder uploaded successfully', 'image_path': relpath(path, app.config['UPLOAD_FOLDER'])})
 
 
 @app.route('/api/process_image_similarity/Color', methods=['POST'])
@@ -183,6 +219,28 @@ def scrape_website():
         scraped_image_paths = scrape_images_from_website(website_url, destination_dir)
 
         return jsonify({'message': 'Website images scraped successfully', 'image_paths': scraped_image_paths}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/send-attachment', methods=['POST'])
+def send_attachment():
+    try:
+        similarity_results = request.json.get('similarity_results')
+        image_path = request.json.get('image_path')
+
+        if similarity_results:
+            pdf_content = create_pdf(similarity_results,image_path)
+
+            return send_file(
+                BytesIO(pdf_content),
+                as_attachment=True,
+                download_name='results.pdf',
+                mimetype='application/pdf'
+            )
+
+        return jsonify({'error': 'No similarity results provided'}), 400
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

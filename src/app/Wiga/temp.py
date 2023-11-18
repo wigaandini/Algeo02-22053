@@ -42,58 +42,6 @@ def cosine_similarity(vector_img1, vector_img2):
     else:
         return 0
 
-def get_hsv(img):
-    imgnorm = img / 255.0
-    b, g, r = imgnorm[:, :, 0], imgnorm[:, :, 1], imgnorm[:, :, 2]
-    Cmin = np.minimum.reduce([r, g, b])
-    Cmax = np.maximum.reduce([r, g, b])
-    delta = Cmax - Cmin
-    vVal = np.select(
-        [
-            (Cmax >= 0) & (Cmax < 0.2),
-            (Cmax >= 0.2) & (Cmax < 0.7),
-            (Cmax >= 0.7) & (Cmax <= 1)
-        ],
-        [0, 1, 2]
-    )    
-    sVal = np.zeros_like(delta)
-    np.divide(delta, np.maximum(Cmax, 1e-10), out=sVal, where=Cmax != 0)
-    sVal = np.select(
-        [
-            (sVal >= 0) & (sVal < 0.2),
-            (sVal >= 0.2) & (sVal < 0.7),
-            (sVal >= 0.7) & (sVal <= 1)
-        ],
-        [0, 1, 2]
-    )    
-    hVal = np.zeros_like(delta)
-    hVal = np.where(delta != 0,
-        np.select(
-            [Cmax == r, Cmax == g, Cmax == b],
-            [
-                60 * (((g - b) / np.maximum(delta, 1e-10))),
-                60 * (((b - r) / np.maximum(delta, 1e-10)) + 2),
-                60 * (((r - g) / np.maximum(delta, 1e-10)) + 4),
-            ],
-            default = 0
-        ),
-        0
-    )
-    hVal = np.nan_to_num(hVal)
-    hVal = np.round(hVal)
-    hVal = np.select(
-        [np.logical_or((hVal >= 316) & (hVal <= 360), (hVal == 0)),
-         (hVal >= 1) & (hVal <= 25),
-         (hVal >= 26) & (hVal <= 40),
-         (hVal >= 41) & (hVal <= 120),
-         (hVal >= 121) & (hVal <= 190),
-         (hVal >= 191) & (hVal <= 270),
-         (hVal >= 271) & (hVal <= 295),
-         (hVal >= 296) & (hVal <= 315)],
-        [0, 1, 2, 3, 4, 5, 6, 7]
-    )
-    return hVal, sVal, vVal
-
 def hsv_histogram(img):
     imgnorm = img / 255.0
     b, g, r = imgnorm[:, :, 0], imgnorm[:, :, 1], imgnorm[:, :, 2]
@@ -143,10 +91,6 @@ def hsv_histogram(img):
 
     return frequency_vector.tolist()
 
-def compute_similarity(args):
-    i, vector1, vector2 = args
-    cs = cosine_similarity(vector1, vector2)
-    return i, cs
 
 def parallel_hsv_histogram(args):
     img_i, = args
@@ -172,14 +116,9 @@ def parallel_check_similarity(img, imgs):
             writer.writerows(vector2_list)
 
     res = np.empty((0, 2))
-    
-    similarity_args = [(i, vector1, vector2) for i, vector2 in enumerate(vector2_list)]
-
-    with multiprocessing.Pool() as pool:
-        similarity_results = pool.map(compute_similarity, similarity_args)
-
-    for i, cs in similarity_results:
-        if cs > 60:
+    for i, vector2 in enumerate(vector2_list):
+        cs = cosine_similarity(vector1,vector2)
+        if cs > 60:  # You can adjust the threshold as needed
             res = np.vstack((res, np.array([i, cs])))
 
     sorted_res = res[res[:, 1].argsort()[::-1]]  # Sort results by similarity score

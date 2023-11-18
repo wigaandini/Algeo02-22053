@@ -34,7 +34,6 @@ def vector_length(vector):
 def cosine_similarity(vector_img1, vector_img2):
     vector_img1 = np.array(vector_img1)
     vector_img2 = np.array(vector_img2)
-
     if vector_length(vector_img1) != 0 and vector_length(vector_img2) != 0:
         return (dot_product_vector(vector_img1, vector_img2) /
                 (vector_length(vector_img1) * vector_length(vector_img2))) * 100
