@@ -40,12 +40,3 @@ def cosine_similarity(vector_img1, vector_img2):
                 (vector_length(vector_img1) * vector_length(vector_img2))) * 100
     else:
         return 0
-    
-def write_csv(imgs, imgpath):
-    fields = ['img_path', 'img_vector']
-    filename = "cache.csv"
-    with open(filename, 'w') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(fields)
-        for i in range(len(imgs)):
-            csvwriter.writerow([imgpath[i], imgs[i]])

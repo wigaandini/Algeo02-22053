@@ -3,27 +3,53 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import placeholder from "../../public/images/placeholder.jpg";
 import Card from "../card";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+
 interface response {
   similarity_score: number;
   image_path: string;
 }
 
+import { useMemo } from "react";
+
 const Form = () => {
   const [image, setImage] = useState<File | null>(null);
   const [imagedataset, setImagedataset] = useState<File[] | null>(null);
-
+  const [method, setMethod] = useState<string>("Color");
   const [startTime, setStartTime] = useState<number | null>(null);
   const [result, setResult] = useState<response[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [havescrapping, sethavescrapping] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0); // Add state for elapsed time
+  const [backgroundColor, setBackgroundColor] = useState<string>(
+    "radial-gradient(circle, #fecccb, #ffd5c8, #ffe0c9, #ffebcc, #fef6d4)"
+  );
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [isScraping, setIsScraping] = useState(false);
+  const [showBackdrop, setShowBackdrop] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const inputRefFolder = useRef<HTMLInputElement>(null);
+
+  const imageSrc = useMemo(() => {
+    return image ? URL.createObjectURL(image) : placeholder;
+  }, [image, placeholder]);
+
+  const imagedatasetSrc = useMemo(() => {
+    // Check if imagedataset is an array and it has at least one element
+    return imagedataset && imagedataset.length > 0
+      ? havescrapping
+        ? "../../" + imagedataset[0]
+        : URL.createObjectURL(imagedataset[0])
+      : placeholder;
+  }, [imagedataset, placeholder]);
 
   const handlePhotoClick = () => {
     if (inputRef.current) {
       inputRef.current.click();
     }
   };
+  imagedataset && console.log(imagedataset[0])
 
   const handleFolderClick = () => {
     if (inputRefFolder.current) {
@@ -57,7 +83,7 @@ const Form = () => {
 
   const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
-
+    sethavescrapping(false);
     if (selectedFiles) {
       const filesArray = Array.from(selectedFiles);
       setImagedataset(filesArray);
@@ -89,6 +115,56 @@ const Form = () => {
     }
   };
 
+  const handleToggleCheckbox = () => {
+    setMethod((prevMethod) => (prevMethod === "Color" ? "Texture" : "Color"));
+  };
+
+  const handleWebsiteUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setWebsiteUrl(e.target.value);
+  };
+
+  const handleScrapeWebsite = () => {
+    setIsScraping(true);
+  };
+
+  const handleCancelScraping = () => {
+    setIsScraping(false);
+    setWebsiteUrl(""); // Reset the entered URL
+  };
+
+  const handleSubmitScraping = async () => {
+    setShowBackdrop(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/scrape-website", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({ website_url: websiteUrl }),
+      });
+      setIsScraping(false);
+      setWebsiteUrl("");
+      setShowBackdrop(false);
+
+      if (res.ok) {
+        const data = await res.json();
+        setImagedataset(data.image_paths);
+
+        sethavescrapping(true); // Optional: Log the success message
+        // Handle the scraped image paths as needed (data.image_paths)
+      } else {
+        console.error("Error scraping website:", res.statusText);
+      }
+    } catch (error) {
+      console.error("Error scraping website:", error);
+      setIsScraping(false);
+      setWebsiteUrl("");
+      setShowBackdrop(false);
+    }
+  };
+
+  /* Pagination Codes */
+
   const itemsPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -113,18 +189,21 @@ const Form = () => {
   const handlePrevPage = () => {
     setCurrentPage(1);
   };
+  /* End of Pagination Codes */
 
   const onSubmit = async (e: React.FormEvent) => {
+    setElapsedTime(0);
     e.preventDefault();
     setLoading(true);
     setStartTime(new Date().getTime()); // Set the start time
+    setCurrentPage(1);
 
     try {
       const formData = new FormData();
       formData.append("file_name", image!.name);
 
       const res = await fetch(
-        "http://localhost:5000/api/process_image_similarity",
+        `http://localhost:5000/api/process_image_similarity/${method}`,
         {
           method: "POST",
           body: formData,
@@ -140,6 +219,7 @@ const Form = () => {
         setResult(data.similarity_results);
       } else {
         console.log("Error");
+        setResult(null);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -149,6 +229,67 @@ const Form = () => {
     }
   };
 
+  const saveResultsToPDF = async () => {
+    const doc = new jsPDF();
+    // Extract data from the result array
+    const data = result?.map(({ image_path, similarity_score }) => ({
+      image_path,
+      similarity_score,
+    }));
+
+    // Set the table header
+    doc.text("Image Similarity Results", 14, 10);
+
+    if (data) {
+      // Add rows to the table
+      for (let index = 0; index < data.length; index++) {
+        const { image_path, similarity_score } = data[index];
+        const startY = index === 0 ? 20 : doc.previousAutoTable.finalY + 10;
+
+        doc.text(`Image ${index + 1}:`, 14, startY);
+        doc.text(
+          `Similarity Score: ${similarity_score.toFixed(2)}`,
+          14,
+          startY + 10
+        );
+
+        // Load the image and add it to the PDF
+        const imgData = await loadImageData(image_path);
+        doc.addImage(imgData, "JPEG", 80, startY, 40, 40);
+
+        // Add a new page for each image (optional)
+        if (index < data.length - 1) {
+          doc.addPage();
+        }
+      }
+    }
+
+    // Save the PDF with a specific name
+    doc.save("results.pdf");
+  };
+
+  // Helper function to convert image path to image data
+  const loadImageData = (imagePath: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/jpeg"));
+      };
+      img.src = imagePath;
+    });
+  };
+
+  useEffect(() => {
+    setBackgroundColor(
+      "radial-gradient(circle, #fecccb, #ffd5c8, #ffe0c9, #ffebcc, #fef6d4)"
+    );
+  }, []);
+
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
 
@@ -157,38 +298,49 @@ const Form = () => {
       intervalId = setInterval(() => {
         const currentTime = new Date().getTime();
         const elapsedTime = (currentTime - startTime) / 1000; // Convert to seconds
-        setElapsedTime(elapsedTime);
-      }, 100);
+        setElapsedTime(elapsedTime); // Update state with the elapsed time
+      }, 1000);
     }
-
     // Cleanup the interval when the component is unmounted or when the search is complete
     return () => {
       clearInterval(intervalId);
     };
   }, [startTime, result]);
 
+  const handleBackdropClick = () => {
+    // Only allow clicking the backdrop if scraping is not in progress
+    if (!isScraping) {
+      // Add any action you want to perform on backdrop click here
+      // For example, displaying an image or any other UI element
+      console.log("Backdrop clicked");
+    }
+  };
+
   return (
     <div
       className="py-10 mt-5  rounded-lg w-[85%] justify-center"
       style={{
-        background:
-          "radial-gradient(circle, #fecccb, #ffd5c8, #ffe0c9, #ffebcc, #fef6d4);",
+        background: backgroundColor,
         paddingLeft: "20px",
         paddingRight: "20px",
       }}
     >
+      {showBackdrop && (
+        <div
+          className={`fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 ${
+            isScraping ? "cursor-not-allowed" : "cursor-pointer"
+          }`}
+          onClick={handleBackdropClick}
+        />
+      )}
       <form onSubmit={onSubmit} className="formbg">
         <div className="grid grid-cols-2 gap-4 ">
           <div>
-            <label className="block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{` ${
+            <label className="font-bakso block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{` ${
               image ? "Uploaded Image : " : "Upload Your Image!"
             }`}</label>
             <div className="relative object-contain w-[160px] md:w-[240px] lg:w-[320px] xl:w-[480px] h-[90px] md:h-[135px] lg:h-[180px] xl:h-[270px] mb-4">
-              <Image
-                alt="Uploaded Image"
-                src={image ? URL.createObjectURL(image) : placeholder}
-                fill
-              />
+              <Image alt="Uploaded Image" src={imageSrc} fill />
             </div>
             <input
               type="file"
@@ -202,47 +354,128 @@ const Form = () => {
             <button
               type="button"
               onClick={handlePhotoClick}
-              className="border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
+              className="font-bakso border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
             >
               {image ? "Change Your Photo ?" : "Upload Photo"}
             </button>
           </div>
-          <div>
-            <label className="block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{`${
+          <div className="justify-center">
+            <label className="font-bakso block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{`${
               imagedataset
                 ? `Dataset : ${imagedataset.length} images `
                 : "Upload Your Dataset!"
             }`}</label>
             <div className="relative object-contain w-[160px] md:w-[240px] lg:w-[320px] xl:w-[480px] h-[90px] md:h-[135px] lg:h-[180px] xl:h-[270px] mb-4">
-              <Image
-                alt="Uploaded Image"
-                src={
-                  imagedataset
-                    ? URL.createObjectURL(imagedataset[0])
-                    : placeholder
-                }
-                fill
-              />
+              <Image alt="Uploaded Image" src={imagedatasetSrc} fill />
             </div>
-            <input
-              type="file"
-              webkitdirectory="true"
-              multiple
-              className="hidden"
-              ref={inputRefFolder}
-              onChange={handleFolderUpload}
-              required
-              accept="image/*"
-              name="folderupload"
-            />
-            <button
-              type="button"
-              onClick={handleFolderClick}
-              className="border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
-            >
-              {`${imagedataset ? "Change Your Dataset?" : "Upload Folder"}`}
-            </button>
+            <div className="flex flex-row items-center justify-center">
+              <div
+                className={`rounded-lg w-${
+                  isScraping ? "[100%]" : "[100%]"
+                } justify-center`}
+              >
+                {isScraping ? (
+                  <div className="flex flex-col gap-5 justify-center items-center">
+                    <input
+                      type="text"
+                      placeholder="Input Website URL"
+                      value={websiteUrl}
+                      onChange={handleWebsiteUrlChange}
+                      className="border-[2px] border-[#757376] w-[300px] bg-[#FEFBD6] p-2 rounded-full"
+                    />
+                    <div className="flex flex-row justify-center items-center gap-10">
+                      <button
+                        type="button"
+                        onClick={handleCancelScraping}
+                        className="font-bakso border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSubmitScraping}
+                        className="font-bakso border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
+                      >
+                        Submit
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-row gap-5 justify-center">
+                    <input
+                      type="file"
+                      webkitdirectory="true"
+                      multiple
+                      className="hidden"
+                      ref={inputRefFolder}
+                      onChange={handleFolderUpload}
+                      accept="image/*"
+                      name="folderupload"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleFolderClick}
+                      className="font-bakso border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
+                    >
+                      {`${
+                        imagedataset ? "Change Your Dataset?" : "Upload Folder"
+                      }`}
+                    </button>{" "}
+                    <button
+                      type="button"
+                      onClick={handleScrapeWebsite}
+                      className="font-bakso border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
+                    >
+                      Scrape Website
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div className="my-4 ">
+          <center>
+            <div className="items-center">
+              <label className="inline-flex items-center ml-3 relative">
+                <span
+                  className={`text-[#005B4A] font-bakso mr-3 text-lg ${
+                    method === "Color" ? "text-[#005B4A]" : "text-gray-400"
+                  }`}
+                >
+                  Color
+                </span>
+                <input
+                  type="checkbox"
+                  onChange={handleToggleCheckbox}
+                  checked={method === "Texture"}
+                  className="hidden"
+                />
+                <div
+                  className={`toggle-switch w-[48px] h-[24px] rounded-full ${
+                    method === "Color" ? "bg-[#005B4A]" : "bg-gray-400"
+                  }`}
+                >
+                  <div
+                    className={`toggle-switch-handle  -ml-6 w-6 h-6 rounded-full transform transition-transform duration-300 ease-in-out ${
+                      method === "Texture"
+                        ? "bg-white translate-x-full"
+                        : "bg-gray-200 translate-x-0"
+                    }`}
+                  ></div>
+                </div>
+
+                <span
+                  className={`ml-3 text-[#005B4A] font-bakso text-lg ${
+                    method === "Texture" ? "text-[#005B4A]" : "text-gray-400"
+                  }`}
+                >
+                  Texture
+                </span>
+              </label>
+            </div>
+          </center>
         </div>
 
         {loading ? (
@@ -256,8 +489,20 @@ const Form = () => {
         ) : currentImages ? (
           currentImages.length > 0 ? (
             <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl py-10">{`Result Amount : ${result?.length} images`}</h1>
-              <div className="flex flex-wrap justify-center gap-10">
+              <hr className="my-6 border-t-2 border-[#757376]" />
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl py-10">{`${result?.length} images in ${elapsedTime} seconds`}</h1>
+              <button
+                className={`disabled:opacity-70 disabled:cursor-not-allowed mx-2 px-4 mt-10 py-2 rounded-full border-[2px] border-[#757376] bg-[#FEFBD6] text-[#005B4A] transition-all duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg`}
+                disabled={!currentImages}
+                onClick={saveResultsToPDF}
+                type="button"
+              >
+                Save Your Results?
+              </button>
+              <div
+                id="results-container"
+                className="flex flex-wrap justify-center gap-10"
+              >
                 {currentImages.map((response, index) => (
                   <div
                     key={index}
@@ -305,15 +550,18 @@ const Form = () => {
                   End
                 </button>
               </div>
+              <hr className="my-6 border-t-2 border-[#757376]" />
             </div>
           ) : (
             <h1>Tidak ada gambar yang mirip !</h1>
           )
+          
         ) : null}
 
         <button
           type="submit"
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-full"
+          disabled={loading || !image || !imagedataset}
+          className={`disabled:opacity-70 disabled:cursor-not-allowed mx-2 px-4 mt-10 py-2 rounded-full border-[2px] border-[#757376] bg-[#FEFBD6] text-[#005B4A] transition-all duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg`}
         >
           Search!
         </button>
@@ -321,5 +569,4 @@ const Form = () => {
     </div>
   );
 };
-
 export default Form;

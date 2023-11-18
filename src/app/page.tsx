@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Container from "./Components/Navbar/Container";
 import bgimg from "../public/images/bgimg.jpg";
 import Form from "./Components/form"; // Correct the import path
@@ -23,11 +22,11 @@ export default function Home() {
       </div>
       <center>
         <Container>
-          <div className="font-sans relative z-1 text-8xl mt-10">Reverse</div>
+          <div className="font-bakso relative z-1 text-8xl mt-10">Content Based</div>
           <div className="relative z-1 pt-8 text-center flex flex-row items-baseline justify-center gap-5">
-            <div className="font-sans text-5xl">Image</div>
-            <div className="relative z-1 text-center font-sans text-5xl pt-10">
-              Search
+            <div className="font-bakso text-5xl">Image</div>
+            <div className="relative z-1 text-center font-bakso text-5xl pt-10">
+              Retrieval
             </div>
           </div>
           <Form />

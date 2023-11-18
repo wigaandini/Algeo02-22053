@@ -74,7 +74,7 @@ def HSVHistogram(hVal, sVal, vVal):
     frequency_vector = [frequency_dict[key] for key in custom_bins]
     return frequency_vector
 
-def checkSimilarity(img, imgs):
+def checkColorSimilarity(img, imgs, imgpath):
     res = []
     h, s, v = getHSV(img)
     hsv = HSVHistogram(h,s,v)
@@ -82,7 +82,7 @@ def checkSimilarity(img, imgs):
         hi, si, vi = getHSV(imgs[i])
         hsvi = HSVHistogram(hi,si,vi)
         cs = cosineSimilarity(hsv , hsvi)
-        resi = (i, cs)
+        resi = (imgpath[i], cs)
         # print(cs)
         if cs > 60:
             res.append(resi)
@@ -99,8 +99,9 @@ dataset_path = getDatasetPath()
 imgs, imgpath = readDataset(dataset_path)
 
 img1 = readImg(file1)
-res = checkSimilarity(img1, imgs)
-
+res = checkColorSimilarity(img1, imgs, imgpath)
+# print(imgpath)
+# print()
 print(res)
 
 end = time.time()

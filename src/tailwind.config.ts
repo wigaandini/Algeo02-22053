@@ -15,8 +15,12 @@ module.exports = {
         "2xl": "1400px",
       },
     },
-    
+
     extend: {
+      fontFamily: {
+        bakso: ["BaksoSapi", "sans-serif"],
+        oldenburg: ["Oldenburg", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

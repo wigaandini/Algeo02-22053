@@ -3,10 +3,13 @@ import numpy as np
 from pathlib import Path
 import time
 import os
+import multiprocessing
+import csv
 
 def get_img_path(file_name):
     current_path = Path().absolute()
-    return str(current_path) + "\\public\\" + "\\Image\\" + file_name
+    return os.path.join(str(current_path), "public", "Image", file_name)
+
 
 def read_img(file_name):
     return cv2.imread(get_img_path(file_name))
@@ -16,7 +19,7 @@ def get_dataset_path():
     return current_path / "public" / "Dataset"
 
 def read_dataset(data_path):
-    image_files = [f for f in os.listdir(data_path) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+    image_files = [f for f in os.listdir(data_path) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]  # cuma read yg file image aja
     img_paths = [os.path.join(data_path, file) for file in image_files]
     imgs = np.array([cv2.imread(img_path) for img_path in img_paths])
 
@@ -33,49 +36,36 @@ def cosine_similarity(vector_img1, vector_img2):
     vector_img1 = np.array(vector_img1)
     vector_img2 = np.array(vector_img2)
 
-    if vector_length(vector_img1) != 0 and vector_length(vector_img2) != 0:
+    if vector_length(vector_img1) != 0 and vector_length(vector_img2) != 0:  # ngehindarin pembagian 0
         return (dot_product_vector(vector_img1, vector_img2) /
                 (vector_length(vector_img1) * vector_length(vector_img2))) * 100
     else:
         return 0
 
-def get_hsv(img):
-    imgnorm = img / 255.0
+def hsv_histogram(img):
+    imgnorm = img / 255.0 # normalisasi rgb 0-255 ke 0-1
     b, g, r = imgnorm[:, :, 0], imgnorm[:, :, 1], imgnorm[:, :, 2]
+
     Cmin = np.minimum.reduce([r, g, b])
     Cmax = np.maximum.reduce([r, g, b])
     delta = Cmax - Cmin
-    vVal = np.select(
-        [
-            (Cmax >= 0) & (Cmax < 0.2),
-            (Cmax >= 0.2) & (Cmax < 0.7),
-            (Cmax >= 0.7) & (Cmax <= 1)
-        ],
-        [0, 1, 2]
-    )    
-    sVal = np.zeros_like(delta)
-    np.divide(delta, np.maximum(Cmax, 1e-10), out=sVal, where=Cmax != 0)
-    sVal = np.select(
-        [
-            (sVal >= 0) & (sVal < 0.2),
-            (sVal >= 0.2) & (sVal < 0.7),
-            (sVal >= 0.7) & (sVal <= 1)
-        ],
-        [0, 1, 2]
-    )    
+
+    vVal = np.digitize(Cmax, [0, 0.2, 0.7, 1]) - 1
+    sVal = np.digitize(delta / np.maximum(Cmax, 1e-10), [0, 0.2, 0.7, 1]) - 1   # dikasi 1e-10 buat ngehindarin pembagian 0
+
     hVal = np.zeros_like(delta)
-    hVal = np.where(delta != 0,
-        np.select(
-            [Cmax == r, Cmax == g, Cmax == b],
-            [
-                60 * (((g - b) / np.maximum(delta, 1e-10))),
-                60 * (((b - r) / np.maximum(delta, 1e-10)) + 2),
-                60 * (((r - g) / np.maximum(delta, 1e-10)) + 4),
-            ],
-            default = 0
-        ),
-        0
-    )
+    non_zero_delta = delta != 0
+
+    hVal[non_zero_delta] = np.select(
+        [Cmax == r, Cmax == g, Cmax == b],
+        [
+            60 * (((g - b) / np.maximum(delta, 1e-10))),        # dikasi 1e-10 buat ngehindarin pembagian 0
+            60 * (((b - r) / np.maximum(delta, 1e-10)) + 2),
+            60 * (((r - g) / np.maximum(delta, 1e-10)) + 4),
+        ],
+        default=0
+    )[non_zero_delta]
+
     hVal = np.nan_to_num(hVal)
     hVal = np.round(hVal)
     hVal = np.select(
@@ -89,54 +79,51 @@ def get_hsv(img):
          (hVal >= 296) & (hVal <= 315)],
         [0, 1, 2, 3, 4, 5, 6, 7]
     )
-    return hVal, sVal, vVal
-
-def hsv_histogram(h_val, s_val, v_val):
-    hVal_flat = h_val.flatten()
-    sVal_flat = s_val.flatten()
-    vVal_flat = v_val.flatten()
 
     # Jadiin 1 value, such as 711, 120 dst
-    combined_values = hVal_flat * 100 + sVal_flat * 10 + vVal_flat
-    custom_bins = [0, 1, 2, 10, 11, 12, 20, 21, 22, 100, 101, 102, 110, 111, 112, 120, 121, 122, 200, 201, 202, 210, 211, 212, 220, 221, 222, 300, 301, 302, 310, 311, 312, 320, 321, 322, 400, 401, 402, 410, 411, 412, 420, 421, 422, 500, 501, 502, 510, 511, 512, 520, 521, 522, 600, 601, 602, 610, 611, 612, 620, 621, 622, 700, 701, 702, 710, 711, 712, 720, 721, 722]
-    frequency_dict = {key: 0 for key in custom_bins}
+    combined_values = hVal * 100 + sVal * 10 + vVal
+    custom_bins = range(0, 723)  # Range 0 sampai 722
+    frequency_vector, _ = np.histogram(combined_values.flatten(), bins=custom_bins)
 
-    for value in combined_values:
-        frequency_dict[value] += 1
+    return frequency_vector.tolist()
 
-    frequency_vector = [frequency_dict[key] for key in custom_bins]
-    return frequency_vector
+def compute_similarity(args):
+    i, vector1, vector2 = args
+    cs = cosine_similarity(vector1, vector2)
+    return i, cs
 
-def check_similarity(img, imgs):
-    res = np.empty((0, 2))  # Initialize an empty NumPy array for results
+def parallel_hsv_histogram(args):
+    img_i, = args
+    return hsv_histogram(img_i)
 
-    h, s, v = get_hsv(img)
-    hsv = hsv_histogram(h, s, v)
+def parallel_check_similarity(img, imgs):
+    vector1 = hsv_histogram(img)
+    cached_file_path = "vector2_list_cache.csv"
 
-    for i, img_i in enumerate(imgs):
-        h_i, s_i, v_i = get_hsv(img_i)
-        hsv_i = hsv_histogram(h_i, s_i, v_i)
-        cs = cosine_similarity(hsv, hsv_i)
+    if os.path.exists(cached_file_path):
+        with open(cached_file_path, 'r') as csvfile:
+            reader = csv.reader(csvfile)
+            header = next(reader)
+            vector2_list = [list(map(float, row)) for row in reader]
+    else:
+        with multiprocessing.Pool() as pool:
+            vector2_list = pool.map(parallel_hsv_histogram, [(img_i,) for img_i in imgs])
 
+        with open(cached_file_path, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['img_vector'])
+            writer.writerows(vector2_list)
+
+    res = np.empty((0, 2))
+    
+    similarity_args = [(i, vector1, vector2) for i, vector2 in enumerate(vector2_list)]
+
+    with multiprocessing.Pool() as pool:
+        similarity_results = pool.map(compute_similarity, similarity_args)
+
+    for i, cs in similarity_results:
         if cs > 60:
             res = np.vstack((res, np.array([i, cs])))
 
-    sorted_res = res[res[:, 1].argsort()[::-1]]  # Sort results by similarity score
+    sorted_res = res[res[:, 1].argsort()[::-1]]
     return sorted_res
-
-def main():
-    file_name = input("Enter the file name (including file type, e.g., Opan.png): \n")
-    start_time = time.time()
-
-    dataset_path = get_dataset_path()
-    imgs, img_paths = read_dataset(dataset_path)
-    img = read_img(file_name)
-    result = check_similarity(img, imgs)
-
-    print(result)
-
-    end_time = time.time()
-    print("Execution time: {:.2f} seconds".format(end_time - start_time))
-
-if __name__ == "__main__":
-    main()

@@ -1,28 +1,21 @@
-
 interface CardProps {
   image: string;
   similarity: number;
 }
 
 const Card: React.FC<CardProps> = ({ image, similarity }) => {
-  
   return (
     <div className="card">
-      <img
-        src={image}
-        className="card-image"
-        alt="Uploaded Image"
-
-      />
+      <img src={image} className="card-image" alt="Uploaded Image" />
       <div className="card-overlay">
-        <p className="similarity-text">Similarity: {similarity}%</p>
+        <p className="similarity-text">Similarity: {similarity.toFixed(2)} %</p>
       </div>
 
       <style jsx>{`
         .card {
           position: relative;
           width: 300px; /* Set your desired width */
-          height: 200px; /* Set your desired height */
+          height: 300px; /* Set your desired height */
           overflow: hidden;
           border-radius: 8px;
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
