@@ -28,6 +28,37 @@ const Form = () => {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [isScraping, setIsScraping] = useState(false);
   const [showBackdrop, setShowBackdrop] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+  const [iscached, setiscached] = useState(false);
+  let initialTime = 20;
+
+if (imagedataset) {
+  const length = imagedataset.length;
+
+  if (iscached) {
+    // Adjust initialTime based on cached conditions
+    if (length > 900) {
+      initialTime = 20;
+    } else if (length > 600) {
+      initialTime = 15;
+    } else if (length > 300) {
+      initialTime = 10;
+    } else {
+      initialTime = 5;
+    }
+  } else {
+    // Adjust initialTime based on non-cached conditions
+    if (length > 1200) {
+      initialTime = 60;
+    } else if (length > 900) {
+      initialTime = 50;
+    } else if (length > 600) {
+      initialTime = 40;
+    } else if (length > 300) {
+      initialTime = 30;
+    }
+  }
+}
   const inputRef = useRef<HTMLInputElement>(null);
   const inputRefFolder = useRef<HTMLInputElement>(null);
   const webcamRef = useRef(null);
@@ -51,7 +82,6 @@ const Form = () => {
       inputRef.current.click();
     }
   };
-  imagedataset && console.log(imagedataset[0]);
 
   const handleFolderClick = () => {
     if (inputRefFolder.current) {
@@ -110,6 +140,7 @@ const Form = () => {
             method: "POST",
             body: formData,
           });
+          setiscached(false);
 
           if (!res.ok) {
             console.log("Error uploading folder");
@@ -147,46 +178,108 @@ const Form = () => {
       const video = webcam.video as HTMLVideoElement;
 
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(async (blob) => {
-        if (blob) {
-          const imageconv = new File([blob], "image.jpg");
-          setImage(imageconv);
 
-          const formData = new FormData();
-          formData.append("image", imageconv);
+      // Wrap canvas.toBlob() in a Promise
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, "image/jpeg")
+      );
 
-          // Upload the captured image to the server
+      if (blob) {
+        const imageconv = new File([blob], "image.jpg");
+        setImage(imageconv);
 
-          try {
-            const res = await fetch("http://localhost:5000/api/upload-image", {
+        const formData = new FormData();
+        formData.append("image", imageconv);
+
+        try {
+          const uploadRes = await fetch(
+            "http://localhost:5000/api/upload-image",
+            {
               method: "POST",
               body: formData,
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-              console.log("Error uploading image");
-            } else {
-              setImagestring(data.image_path);
             }
-          } catch (error) {
-            console.error("Error uploading image:", error);
+          );
+
+          if (!uploadRes.ok) {
+            console.log("Error uploading image");
+            return; // Stop execution if there's an error
           }
+
+          const uploadData = await uploadRes.json();
+
+          if (uploadData && !uploadData.error) {
+            setImagestring(uploadData.image_path);
+
+            setElapsedTime(0);
+            setLoading(true);
+            setStartTime(new Date().getTime()); // Set the start time
+            setCurrentPage(1);
+
+            // Continue with the second API call
+            const processFormData = new FormData();
+            processFormData.append("file_name", imageconv.name);
+
+            const processRes = await fetch(
+              `http://localhost:5000/api/process_image_similarity/${method}`,
+              {
+                method: "POST",
+                body: processFormData,
+              }
+            );
+
+            const processData = await processRes.json();
+
+            setLoading(false);
+            setStartTime(null);
+
+            if (processRes.ok) {
+              setResult(processData.similarity_results);
+              setiscached(true);
+            } else {
+              console.log("Error processing image");
+              setResult(null);
+            }
+          } else {
+            console.error("Error uploading image:", uploadData.error);
+          }
+        } catch (error) {
+          console.error("Error handling image:", error);
         }
-      }, "image/jpeg");
+      }
     }
   };
 
   useEffect(() => {
-    const captureInterval = setInterval(() => {
-      handleCameraCapture();
-    }, 20000);
-
-    return () => {
-      clearInterval(captureInterval);
+    const captureAndSubmit = async () => {
+      try {
+        await handleCameraCapture();
+      } catch (error) {
+        console.error("Error in captureAndSubmit:", error);
+      }
     };
-  }, []); // Run only once on component mount
+
+    if (countdown === 0) {
+      captureAndSubmit();
+    }
+  }, [countdown]);
+
+  useEffect(() => {
+    if (imagedataset && imagedataset.length > 0) {
+      const countdownInterval = setInterval(() => {
+        setCountdown((prevCountdown) => {
+          if (prevCountdown === 0) {
+            return initialTime;
+          } else {
+            return Math.max(prevCountdown - 1, 0);
+          }
+        });
+      }, 1000);
+
+      return () => {
+        clearInterval(countdownInterval);
+      };
+    }
+  }, [imagedataset, initialTime]);
 
   const handleSubmitScraping = async () => {
     setShowBackdrop(true);
@@ -246,44 +339,6 @@ const Form = () => {
     setCurrentPage(1);
   };
   /* End of Pagination Codes */
-
-  const onSubmit = async (e: React.FormEvent) => {
-    setElapsedTime(0);
-    e.preventDefault();
-    setLoading(true);
-    setStartTime(new Date().getTime()); // Set the start time
-    setCurrentPage(1);
-
-    try {
-      const formData = new FormData();
-      formData.append("file_name", image!.name);
-
-      const res = await fetch(
-        `http://localhost:5000/api/process_image_similarity/${method}`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const data = await res.json();
-
-      setLoading(false);
-      setStartTime(null);
-
-      if (res.ok) {
-        setResult(data.similarity_results);
-      } else {
-        console.log("Error");
-        setResult(null);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      setLoading(false);
-      setResult(null);
-      setStartTime(null);
-    }
-  };
 
   const sendAttachment = async () => {
     try {
@@ -364,60 +419,67 @@ const Form = () => {
           onClick={handleBackdropClick}
         />
       )}
-      <form onSubmit={onSubmit} className="formbg">
+      <form className="formbg">
         <div className="p-5">
-          <p className="font-lemon text-2xl mb-5">Current Photo :</p>
-          <Webcam
-            audio={false}
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            videoConstraints={{
-              width: 480,
-              height: 270,
-              facingMode: "user",
-            }}
-          />
-          <canvas id="canvas" style={{ display: "none" }} />
+          {imagedataset && imagedataset.length > 0 ? (
+            <>
+              <p className="font-lemon text-2xl mb-5">
+                Current Position (change in {countdown} seconds):
+              </p>
+              <Webcam
+                audio={false}
+                ref={webcamRef}
+                screenshotFormat="image/jpeg"
+                videoConstraints={{
+                  width: 480,
+                  height: 270,
+                  facingMode: "user",
+                }}
+              />
+              <canvas id="canvas" style={{ display: "none" }} />{" "}
+            </>
+          ) : (
+            <p className="font-lemon text-2xl mb-5">
+              Please upload your dataset to activate camera!
+            </p>
+          )}
         </div>
-        <div className="grid grid-cols-2 gap-4 ">
+        <div className="grid grid-cols-2 gap-4 mt-10 justify-center items-center">
           <div>
-            <label className="font-bakso block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{` ${
-              image ? "Uploaded Image : " : "Upload Your Image!"
-            }`}</label>
-            <div className="relative object-contain w-[160px] md:w-[240px] lg:w-[320px] xl:w-[480px] h-[90px] md:h-[135px] lg:h-[180px] xl:h-[270px] mb-4">
-              <Image alt="Uploaded Image" src={imageSrc} fill />
-            </div>
-            <input
-              type="file"
-              className="hidden"
-              ref={inputRef}
-              onChange={handleImageUpload}
-              accept="image/*"
-              required
-              name="fileupload"
-            />
-            <button
-              type="button"
-              onClick={handlePhotoClick}
-              className="font-bakso border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
-            >
-              {image ? "Change Your Photo ?" : "Upload Photo"}
-            </button>
+            {imagedataset && imagedataset.length > 0 ? (
+              <>
+                <label className="font-bakso block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{` ${
+                  image
+                    ? "Current Photo : "
+                    : `Will Capture in ${countdown} Seconds`
+                }`}</label>
+                <div className="relative object-contain w-[160px] md:w-[240px] lg:w-[320px] xl:w-[480px] h-[90px] md:h-[135px] lg:h-[180px] xl:h-[270px] mb-4">
+                  <Image alt="Uploaded Image" src={imageSrc} fill />
+                </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  ref={inputRef}
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  required
+                  name="fileupload"
+                />
+                <button
+                  type="button"
+                  onClick={handlePhotoClick}
+                  className="font-bakso border-[2px] border-[#757376] bg-[#FEFBD6] p-2 rounded-full text-[#005B4A] transition-colors duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg"
+                >
+                  {image ? "Change Your Photo ?" : "Upload Photo"}
+                </button>
+              </>
+            ) : (
+              <p className="font-lemon text-2xl mb-5">
+                Please upload your dataset to activate camera!
+              </p>
+            )}
           </div>
           <div className="justify-center">
-            <div>
-              <label className="font-bakso block mb-4 sm:text-xl md:text-2xl lg:text-4xl">
-                {`${
-                  image
-                    ? "Uploaded Image (Camera Capture) : "
-                    : "Capture Image Every 20 Seconds"
-                }`}
-              </label>
-              <div className="relative object-contain w-[160px] md:w-[240px] lg:w-[320px] xl:w-[480px] h-[90px] md:h-[135px] lg:h-[180px] xl:h-[270px] mb-4">
-                <Image alt="Camera Capture" src={imageSrc} fill />
-              </div>
-            </div>
-
             <label className="font-bakso block mb-4 sm:text-xl md:text-2xl lg:text-4xl">{`${
               imagedataset
                 ? `Dataset : ${imagedataset.length} images `
@@ -615,14 +677,6 @@ const Form = () => {
             <h1>Tidak ada gambar yang mirip !</h1>
           )
         ) : null}
-
-        <button
-          type="submit"
-          disabled={loading || !image || !imagedataset}
-          className={`disabled:opacity-70 disabled:cursor-not-allowed mx-2 px-4 mt-10 py-2 rounded-full border-[2px] border-[#757376] bg-[#FEFBD6] text-[#005B4A] transition-all duration-200 ease-in-out hover:text-gray-600 hover:shadow-lg`}
-        >
-          Search!
-        </button>
       </form>
     </div>
   );

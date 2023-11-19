@@ -93,7 +93,7 @@ def create_pdf(similarity_results, img_path):
             y_position = 500
 
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], result['image_path'])
-        similarity_score = "{:.2f} %".format(result['similarity_score'])  # Format to two decimal places
+        similarity_score = "{:.6f} %".format(result['similarity_score'])  # Format to two decimal places
 
         # Draw the image
         x_position = x_positions[0]
