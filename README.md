@@ -111,4 +111,4 @@ Our program is designed for comparing an image and several images in a dataset w
 ![Alt text](img//Hasil_Save_PDF_Komparasi_Tekstur.png)
 
 ## Bonus Video
-((link yt))
+https://youtu.be/YOp30OjEUek
