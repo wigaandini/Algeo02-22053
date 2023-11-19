@@ -3,7 +3,7 @@
 > Aplikasi Aljabar Vektor dalam Sistem Temu Balik Gambar
 
 ## Kelompok 44 'S43W79N'
-![Alt text](image.png)
+![Alt text](image.jpg)
 | **NIM** | **Nama Anggota** |
 |:---:|:---:|
 | 13522053 | Erdianti Wiga Putri Andini |
