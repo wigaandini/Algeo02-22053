@@ -1,9 +1,9 @@
 # Algeo02-22053
-> Tugas Besar 2 Aljabar Linier dan Geometri IF2123
-> Aplikasi Aljabar Vektor dalam Sistem Temu Balik Gambar
+Tugas Besar 2 Aljabar Linier dan Geometri IF2123
+Aplikasi Aljabar Vektor dalam Sistem Temu Balik Gambar
 
 ## Kelompok 44 'S43W79N'
-![Alt text](image.jpg)
+![Alt text](img//image.jpg)
 | **NIM** | **Nama Anggota** |
 |:---:|:---:|
 | 13522053 | Erdianti Wiga Putri Andini |
@@ -33,12 +33,12 @@ Our program is designed for comparing an image and several images in a dataset w
 |:---:|:---:|
 | CBIR with Color Method | Completed |
 | CBIR with Texture Method | Completed |
-| Capturing Image Using Webcam (Bonus 1) | Completed |
-| Web Scraping (Bonus 2) | Completed |
-| Video (Bonus 3) | Completed |
-| Caching Result (Bonus 4) | Completed |
-| Saving to PDF File (Bonus 5) | Completed |
-| Extracting Other Features for Texture Such As Energy, Dissimilarity, and Correlation (Bonus 6) | Completed |
+| Capturing Image Using Webcam (Bonus) | Completed |
+| Web Scraping (Bonus) | Completed |
+| Video (Bonus) | Completed |
+| Caching Result (Bonus) | Completed |
+| Saving to PDF File (Bonus) | Completed |
+| Extracting Other Features for Texture Such As Energy, Dissimilarity, and Correlation (Bonus) | Completed |
 
 ## Bonus Video
 ((link yt))
