@@ -30,7 +30,7 @@ const Form = () => {
   const [showBackdrop, setShowBackdrop] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const [iscached, setiscached] = useState(false);
-  let initialTime = 20;
+  let initialTime = 40;
 
 if (imagedataset) {
   const length = imagedataset.length;
@@ -38,24 +38,24 @@ if (imagedataset) {
   if (iscached) {
     // Adjust initialTime based on cached conditions
     if (length > 900) {
-      initialTime = 20;
-    } else if (length > 600) {
-      initialTime = 15;
-    } else if (length > 300) {
-      initialTime = 10;
-    } else {
-      initialTime = 5;
-    }
-  } else {
-    // Adjust initialTime based on non-cached conditions
-    if (length > 1200) {
-      initialTime = 60;
-    } else if (length > 900) {
       initialTime = 50;
     } else if (length > 600) {
       initialTime = 40;
     } else if (length > 300) {
       initialTime = 30;
+    } else {
+      initialTime = 20;
+    }
+  } else {
+    // Adjust initialTime based on non-cached conditions
+    if (length > 1200) {
+      initialTime = 80;
+    } else if (length > 900) {
+      initialTime = 70;
+    } else if (length > 600) {
+      initialTime = 60;
+    } else if (length > 300) {
+      initialTime = 50;
     }
   }
 }
