@@ -41,6 +41,9 @@ Our program is designed for comparing an image and several images in a dataset w
 | Saving to PDF File (Bonus) | Completed |
 | Extracting Other Features for Texture Such As Energy, Dissimilarity, and Correlation (Bonus) | Completed |
 
+## Bonus Video
+https://youtu.be/YOp30OjEUek
+
 ## Screenshots
 1. Halaman Home Website
 - Deskripsi Program
@@ -109,6 +112,3 @@ Our program is designed for comparing an image and several images in a dataset w
 ![Alt text](img//Hasil_Save_PDF_Komparasi_Warna.png)
 - Result CBIR Tekstur to PDF
 ![Alt text](img//Hasil_Save_PDF_Komparasi_Tekstur.png)
-
-## Bonus Video
-https://youtu.be/YOp30OjEUek
