@@ -49,13 +49,13 @@ if (imagedataset) {
   } else {
     // Adjust initialTime based on non-cached conditions
     if (length > 1200) {
-      initialTime = 80;
-    } else if (length > 900) {
       initialTime = 70;
-    } else if (length > 600) {
+    } else if (length > 900) {
       initialTime = 60;
-    } else if (length > 300) {
+    } else if (length > 600) {
       initialTime = 50;
+    } else if (length > 300) {
+      initialTime = 40;
     }
   }
 }
