@@ -29,14 +29,16 @@ const Form = () => {
   const [isScraping, setIsScraping] = useState(false);
   const [showBackdrop, setShowBackdrop] = useState(false);
   const [countdown, setCountdown] = useState(10);
-  const [iscached, setiscached] = useState(false);
-  let initialTime = 20;
-
+  const [isCachedTexture, setIsCachedTexture] = useState(false);
+  const [isCachedColor, setIsCachedColor] = useState(false);
+  let initialTime = 40;
   if (imagedataset) {
     const length = imagedataset.length;
-
-    if (iscached) {
-      // Adjust initialTime based on cached conditions
+    if (
+      (isCachedTexture && method === "Texture") ||
+      (isCachedColor && method === "Color")
+    ) {
+      // Adjust Kalo ke cache
       if (length > 900) {
         initialTime = 20;
       } else if (length > 600) {
@@ -47,15 +49,15 @@ const Form = () => {
         initialTime = 5;
       }
     } else {
-      // Adjust initialTime based on non-cached conditions
+      // Buat yang belum ke cache
       if (length > 1200) {
-        initialTime = 60;
+        initialTime = 70;
       } else if (length > 900) {
-        initialTime = 50;
+        initialTime = 60;
       } else if (length > 600) {
-        initialTime = 40;
+        initialTime = 50;
       } else if (length > 300) {
-        initialTime = 30;
+        initialTime = 40;
       }
     }
   }
@@ -140,7 +142,8 @@ const Form = () => {
             method: "POST",
             body: formData,
           });
-          setiscached(false);
+          if (method === "Texture") setIsCachedTexture(false);
+          else if (method === "Color") setIsCachedColor(false);
 
           if (!res.ok) {
             console.log("Error uploading folder");
@@ -234,7 +237,8 @@ const Form = () => {
 
             if (processRes.ok) {
               setResult(processData.similarity_results);
-              setiscached(true);
+              if (method === "Texture") setIsCachedTexture(true);
+              else if (method === "Color") setIsCachedColor(true);
             } else {
               console.log("Error processing image");
               setResult(null);
