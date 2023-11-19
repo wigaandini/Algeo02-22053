@@ -11,7 +11,7 @@ Tugas Besar 2 Aljabar Linier dan Geometri IF2123
 Our program is designed for comparing an image and several images in a dataset with Content-Based Image Retrieval (CBIR) method. CBIR is a technique used to retrieve images from a database. In CBIR, users input a query image, and the system returns images from the database that are similar to the query image. To identify the most similar images, CBIR assesses the content of the query image in comparison to the images stored in the database. Our program employs two types of CBIR, color and texture. 
 ## How To Use The Program
 1. Clone this repository.
-2. Change directory to 'src'.
+2. Change directory to `src`.
 3. Run ***python index.py*** in your terminal.
 4. Open a new terminal, then run ***npm run dev***.
 5. Follow the local link that appears in your terminal.
