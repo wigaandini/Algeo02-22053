@@ -1,18 +1,17 @@
-## Algeo02-22053
+# Algeo02-22053
 Tugas Besar 2 Aljabar Linier dan Geometri IF2123
-# Kelompok 44 'S43W79N'
+## Kelompok 44 'S43W79N'
 | Centered | Centered |
 |:---:|:---:|
 | NIM | Nama Anggota |
 | 13522053 | Erdianti Wiga Putri Andini |
 | 13522058 | Imanuel Sebastian Girsang |
 | 13522062 | Salsabiila |
-|:---:|:---:|
-# About The Program
+## About The Program
 Our program is designed for comparing an image and several images in a dataset with Content-Based Image Retrieval (CBIR) method. CBIR is a technique used to retrieve images from a database. In CBIR, users input a query image, and the system returns images from the database that are similar to the query image. To identify the most similar images, CBIR assesses the content of the query image in comparison to the images stored in the database. Our program employs two types of CBIR, color and texture. 
-# How To Use The Program
+## How To Use The Program
 1. Clone this repository.
-2. Change directory to ***src***.
+2. Change directory to **src**.
 3. Run ***python index.py*** in your terminal.
 4. Open a new terminal, then run ***npm run dev***.
 5. Follow the local link that appears in your terminal.
@@ -24,7 +23,7 @@ Our program is designed for comparing an image and several images in a dataset w
 11. To use ***camera*** feature, you can go to ***Camera*** page.
 12. Upload your dataset first to activate the camera, then the comparison will running like as before.
 13. You can save the results into a PDF file by pressing ***Save Your Results?*** button.
-# Project Features
+## Project Features
 | Centered | Centered |
 |:---:|:---:|
 | Features | Status |
@@ -36,6 +35,5 @@ Our program is designed for comparing an image and several images in a dataset w
 | Caching Result (Bonus 4) | Completed |
 | Saving to PDF File (Bonus 5) | Completed |
 | Extracting Other Features for Texture Such As Energy, Dissimilarity, and Correlation (Bonus 6) |
-|:---:|:---:|
-# Bonus Video
+## Bonus Video
 ((link yt))
