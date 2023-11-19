@@ -1,8 +1,8 @@
 # Algeo02-22053
 Tugas Besar 2 Aljabar Linier dan Geometri IF2123
 ## Kelompok 44 'S43W79N'
+| **NIM** | **Nama Anggota** |
 |:---:|:---:|
-| NIM | Nama Anggota |
 | 13522053 | Erdianti Wiga Putri Andini |
 | 13522058 | Imanuel Sebastian Girsang |
 | 13522062 | Salsabiila |
@@ -23,8 +23,8 @@ Our program is designed for comparing an image and several images in a dataset w
 12. Upload your dataset first to activate the camera, then the comparison will running like as before.
 13. You can save the results into a PDF file by pressing `Save Your Results?` button.
 ## Project Features
+| **Features** | **Status** |
 |:---:|:---:|
-| Features | Status |
 | CBIR with Color Method | Completed |
 | CBIR with Texture Method | Completed |
 | Capturing Image Using Webcam (Bonus 1) | Completed |
